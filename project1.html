@@ -1,0 +1,2616 @@
+<!DOCTYPE html>
+<!-- ════════════════════════════════════════════════════════════════
+     FILE      : sir_syed_academy_labeled.html
+     PROJECT   : Sir Syed Academy — Online Test Portal
+     VERSION   : 2.0  (Labeled + Admin Rewrite Feature)
+     PURPOSE   : A complete, self-contained online quiz portal.
+                 Every CSS block, every HTML section, and every JS
+                 function is labeled with a numbered comment so
+                 any developer can instantly locate and understand
+                 any piece of the code.
+     NEW IN v2 : Admin can now REWRITE (fully replace) any question —
+                 not just edit fields, but overwrite the entire
+                 question, all 4 options, and the correct answer
+                 via a dedicated "Rewrite Question" modal.
+     ════════════════════════════════════════════════════════════════ -->
+<html lang="en">
+<head>
+
+<!-- ─── [META-1] Character encoding ─────────────────────────────── -->
+<meta charset="UTF-8"/>
+
+<!-- ─── [META-2] Responsive viewport (no zoom on mobile) ─────────── -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<!-- ─── [META-3] Browser tab title ────────────────────────────────── -->
+<title>Sir Syed Academy — Online Test Portal</title>
+
+<!-- ─── [META-4] Google Fonts
+     Playfair Display → headings (elegant serif)
+     DM Sans          → body text (clean sans-serif)
+     ─────────────────────────────────────────────────────────────── -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+<style>
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-1]  DESIGN TOKENS / CSS CUSTOM PROPERTIES
+   PURPOSE  : Central control panel for ALL colours, radius, and
+              transitions. Change a value here and it updates
+              everywhere in the page automatically.
+   ══════════════════════════════════════════════════════════════════ */
+:root {
+  --bg:         #0d0f1a;                    /* [CSS-1a] Page bg — deep navy */
+  --surface:    #13162b;                    /* [CSS-1b] Slightly lighter layer */
+  --card:       #1b1f38;                    /* [CSS-1c] Card / panel bg */
+  --border:     rgba(255,255,255,0.07);     /* [CSS-1d] Subtle white border */
+  --gold:       #f5c842;                    /* [CSS-1e] Primary accent — gold */
+  --gold-dim:   #c9a12a;                    /* [CSS-1f] Darker gold for gradients */
+  --accent:     #5a8dee;                    /* [CSS-1g] Secondary accent — blue */
+  --green:      #3ecf8e;                    /* [CSS-1h] Success / correct colour */
+  --red:        #f56565;                    /* [CSS-1i] Error / wrong colour */
+  --text:       #e8eaf0;                    /* [CSS-1j] Main body text */
+  --muted:      #7a80a0;                    /* [CSS-1k] De-emphasised text */
+  --radius:     14px;                       /* [CSS-1l] Default card border-radius */
+  --trans:      0.28s cubic-bezier(.4,0,.2,1); /* [CSS-1m] Smooth ease-in-out */
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-2]  RESET & BASE STYLES
+   PURPOSE  : Zero out browser default margins/padding.
+              Apply border-box sizing so padding is INSIDE the element
+              width, not outside. Prevent horizontal scroll.
+   ══════════════════════════════════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box; /* [CSS-2a] Width includes padding + border */
+  margin: 0;              /* [CSS-2b] Remove default margin */
+  padding: 0;             /* [CSS-2c] Remove default padding */
+}
+body {
+  font-family: 'DM Sans', sans-serif; /* [CSS-2d] Apply body font */
+  background: var(--bg);              /* [CSS-2e] Dark navy background */
+  color: var(--text);                 /* [CSS-2f] Default text colour */
+  min-height: 100vh;                  /* [CSS-2g] Always fill full viewport height */
+  overflow-x: hidden;                 /* [CSS-2h] No horizontal scroll */
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-3]  HEADER / NAVIGATION BAR
+   PURPOSE  : Fixed top bar containing the logo, timer badge,
+              user info, and login/logout button.
+              Uses backdrop-filter for frosted-glass effect.
+   ══════════════════════════════════════════════════════════════════ */
+header {
+  position: relative;                  /* [CSS-3a] Stacking context */
+  z-index: 10;                         /* [CSS-3b] Always above page content */
+  display: flex;                       /* [CSS-3c] Horizontal flex row */
+  align-items: center;                 /* [CSS-3d] Vertically center children */
+  gap: 18px;                           /* [CSS-3e] Space between flex children */
+  padding: 14px 32px;                  /* [CSS-3f] Top/bottom and side padding */
+  border-bottom: 1px solid var(--border); /* [CSS-3g] Separator line */
+  background: rgba(13,15,26,0.95);     /* [CSS-3h] Near-opaque dark bg */
+  backdrop-filter: blur(12px);         /* [CSS-3i] Frosted-glass blur */
+}
+
+/* [CSS-3j] Logo wrapper — holds icon + text side by side */
+.logo-wrap { display: flex; align-items: center; gap: 12px; }
+
+/* [CSS-3k] Gold gradient square with graduation cap emoji */
+.logo-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0; /* [CSS-3l] Never compress the icon */
+}
+
+/* [CSS-3m] Academy name — bold serif */
+.logo-text h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 900;
+  color: #fff; line-height: 1.1;
+}
+
+/* [CSS-3n] Subtitle tagline — small caps gold */
+.logo-text span {
+  font-size: 0.62rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold); font-weight: 500;
+}
+
+/* [CSS-3o] Right-side controls: timer + user info + button */
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+/* [CSS-3p] Login / Logout button — style is toggled via JS */
+#header-auth-btn {
+  padding: 7px 18px;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; border: none;
+  transition: var(--trans);
+}
+/* [CSS-3q] Gold gradient when showing "Sign In" */
+.btn-login  { background: linear-gradient(135deg, var(--gold), var(--gold-dim)); color: #0d0f1a; }
+/* [CSS-3r] Muted card style when showing "Logout" */
+.btn-logout { background: var(--card); color: var(--muted); border: 1px solid var(--border) !important; }
+
+/* [CSS-3s] "Signed in as…" text — hidden until user logs in */
+#header-user-info { font-size: 0.78rem; color: var(--muted); display: none; }
+#header-user-info span { color: var(--gold); font-weight: 600; }
+
+/* [CSS-3t] Countdown timer badge — hidden outside quiz screen */
+#timer-badge {
+  display: none;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 0.82rem; font-weight: 700;
+  color: var(--green);
+  font-family: monospace;
+}
+
+/* [CSS-3u] Timer danger state: red + pulse when ≤ 10 s left */
+#timer-badge.danger {
+  color: var(--red);
+  border-color: rgba(245,101,101,0.4);
+  animation: pulse 1s infinite; /* [CSS-3v] Trigger pulse keyframe */
+}
+
+/* [CSS-3v] Pulse keyframe — fade in/out at 50% opacity */
+@keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.5 } }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-4]  MAIN CONTENT AREA
+   PURPOSE  : Centred container that holds all screen sections.
+              max-width prevents content from stretching too wide
+              on large monitors.
+   ══════════════════════════════════════════════════════════════════ */
+main {
+  position: relative; z-index: 5;    /* [CSS-4a] Below header */
+  max-width: 980px;                   /* [CSS-4b] Readable max width */
+  margin: 0 auto;                     /* [CSS-4c] Centre horizontally */
+  padding: 40px 20px 70px;            /* [CSS-4d] Top / sides / bottom breathing room */
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-5]  SCREEN SYSTEM
+   PURPOSE  : All sections have class "screen". Only the one that
+              also has class "active" is shown. On activation it
+              plays a fade-up entrance animation.
+   ══════════════════════════════════════════════════════════════════ */
+.screen { display: none; animation: fadeUp .5s ease both; } /* [CSS-5a] Hidden by default */
+.screen.active { display: block; }                           /* [CSS-5b] Visible when active */
+
+/* [CSS-5c] Entrance animation — fade in while rising 20px */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-6]  SCREEN 1 — LOGIN / AUTH CARD
+   PURPOSE  : Centred login form with Google + demo buttons.
+   ══════════════════════════════════════════════════════════════════ */
+#login-screen { max-width: 460px; margin: 0 auto; text-align: center; }
+
+/* [CSS-6a] The card container — dark rounded box */
+.auth-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 48px 36px;
+}
+.auth-logo { font-size: 2.8rem; margin-bottom: 14px; }        /* [CSS-6b] Large emoji icon */
+.auth-card h2 { font-family:'Playfair Display',serif; font-size:1.8rem; font-weight:900; color:#fff; margin-bottom:8px; }
+.auth-card p  { color:var(--muted); font-size:.88rem; margin-bottom:28px; }
+
+/* [CSS-6c] Google OAuth button — white with Google brand colors */
+.google-btn {
+  width:100%; display:flex; align-items:center; justify-content:center; gap:10px;
+  padding:13px 20px; background:#fff; color:#333; border:none; border-radius:10px;
+  font-family:'DM Sans',sans-serif; font-size:.95rem; font-weight:600;
+  cursor:pointer; transition:var(--trans); margin-bottom:12px;
+}
+.google-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,0.3); } /* [CSS-6d] Lift on hover */
+.google-btn svg   { width:18px; height:18px; }
+
+/* [CSS-6e] "or" horizontal divider between auth options */
+.auth-divider {
+  display:flex; align-items:center; gap:10px;
+  margin:18px 0; color:var(--muted); font-size:.78rem;
+}
+.auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* [CSS-6f] Blue info box explaining demo mode */
+.demo-note {
+  background:rgba(90,141,238,0.08); border:1px solid rgba(90,141,238,0.2);
+  border-radius:8px; padding:12px 14px; font-size:.78rem; color:var(--muted); text-align:left;
+}
+.demo-note strong { color:var(--accent); }
+
+/* [CSS-6g] Demo login buttons row — flex so they sit side by side */
+.demo-login-btns { display:flex; gap:10px; margin-top:18px; }
+.demo-btn {
+  flex:1; padding:9px; border-radius:8px;
+  border:1px solid var(--border); background:var(--surface);
+  color:var(--text); font-family:'DM Sans',sans-serif; font-size:.8rem; font-weight:600;
+  cursor:pointer; transition:var(--trans);
+}
+.demo-btn:hover { border-color:var(--gold); color:var(--gold); } /* [CSS-6h] Gold highlight on hover */
+
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-7]  SCREEN 2 — SUBJECT SELECTION
+   PURPOSE  : Hero title + auto-filling grid of subject cards.
+   ══════════════════════════════════════════════════════════════════ */
+.hero { text-align:center; margin-bottom:40px; }
+.hero h2 { font-family:'Playfair Display',serif; font-size:clamp(1.7rem,5vw,2.8rem); font-weight:900; line-height:1.1; color:#fff; }
+.hero h2 em { font-style:normal; color:var(--gold); } /* [CSS-7a] Accent word in gold */
+.hero p { margin-top:10px; color:var(--muted); font-size:.95rem; font-weight:300; }
+
+/* [CSS-7b] Responsive auto-grid — cards wrap and fill available space */
+.subject-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:16px; }
+
+.subject-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:28px 20px;
+  cursor:pointer; text-align:center; transition:var(--trans);
+  position:relative; overflow:hidden; /* [CSS-7c] Clip the shimmer overlay */
+}
+
+/* [CSS-7d] Gold shimmer overlay — appears on hover via opacity change */
+.subject-card::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg, var(--gold), transparent 70%);
+  opacity:0; transition:var(--trans);
+}
+.subject-card:hover { transform:translateY(-4px); border-color:var(--gold-dim); }   /* [CSS-7e] Lift card */
+.subject-card:hover::before { opacity:.08; }                                         /* [CSS-7f] Show shimmer */
+.subject-icon  { font-size:2.2rem; margin-bottom:10px; display:block; }
+.subject-title { font-size:.95rem; font-weight:600; color:var(--text); }
+.subject-count { margin-top:5px; font-size:.74rem; color:var(--muted); }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-8]  SCREEN 3 — TEST SELECTION
+   PURPOSE  : Shows test cards for the chosen subject.
+   ══════════════════════════════════════════════════════════════════ */
+.screen-header { display:flex; align-items:center; gap:14px; margin-bottom:28px; }
+.screen-header h2 { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:900; color:#fff; }
+
+/* [CSS-8a] Test card grid */
+.test-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:16px; }
+
+.test-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:22px 20px;
+  cursor:pointer; transition:var(--trans); position:relative; overflow:hidden;
+}
+
+/* [CSS-8b] Blue shimmer overlay for test cards */
+.test-card::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg, var(--accent), transparent 70%);
+  opacity:0; transition:var(--trans);
+}
+.test-card:hover { transform:translateY(-4px); border-color:var(--accent); }
+.test-card:hover::before { opacity:.07; }
+.test-card-top { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.test-badge { background:rgba(90,141,238,0.15); color:var(--accent); border-radius:6px; padding:3px 8px; font-size:.7rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+.test-name  { font-size:.97rem; font-weight:600; color:var(--text); margin-bottom:5px; }
+.test-info  { font-size:.76rem; color:var(--muted); display:flex; gap:12px; }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-9]  SCREEN 4 — QUIZ / QUESTION VIEW
+   PURPOSE  : Active quiz UI — question card, A-D options,
+              progress bar, and Prev/Next/Submit navigation.
+   ══════════════════════════════════════════════════════════════════ */
+.quiz-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:22px; flex-wrap:wrap; gap:10px;
+}
+
+/* [CSS-9a] Small "← Tests" exit button */
+.back-btn {
+  background:none; border:1px solid var(--border); color:var(--muted);
+  border-radius:8px; padding:7px 14px; cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:.8rem; transition:var(--trans);
+}
+.back-btn:hover { border-color:var(--muted); color:var(--text); }
+.quiz-meta { font-size:.83rem; color:var(--muted); }
+.quiz-meta strong { color:var(--gold); font-weight:600; }
+
+/* [CSS-9b] Progress bar track — full width, thin */
+.progress-wrap { height:4px; background:var(--border); border-radius:99px; margin-bottom:28px; overflow:hidden; }
+/* [CSS-9c] Filled portion animates width change */
+.progress-bar  { height:100%; background:linear-gradient(90deg, var(--gold), var(--accent)); border-radius:99px; transition:width .4s cubic-bezier(.4,0,.2,1); }
+
+/* [CSS-9d] White-ish card containing question text + options */
+.question-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:34px 34px 28px;
+  margin-bottom:22px; min-height:260px;
+}
+.q-number { font-size:.7rem; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:12px; }
+.q-text   { font-size:1.1rem; font-weight:500; line-height:1.6; color:var(--text); margin-bottom:26px; }
+
+/* [CSS-9e] Answer options list */
+.options-list { list-style:none; display:flex; flex-direction:column; gap:9px; }
+.option-item  {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 16px; border:1px solid var(--border);
+  border-radius:10px; cursor:pointer; transition:var(--trans); user-select:none;
+}
+.option-item:hover   { border-color:var(--accent); background:rgba(90,141,238,0.06); }
+/* [CSS-9f] State modifiers applied by JS */
+.option-item.selected { border-color:var(--accent);  background:rgba(90,141,238,0.12); }  /* Chosen by user */
+.option-item.correct  { border-color:var(--green);   background:rgba(62,207,142,0.10); }  /* Right answer revealed */
+.option-item.wrong    { border-color:var(--red);     background:rgba(245,101,101,0.10); } /* Wrong answer revealed */
+
+/* [CSS-9g] Letter circle (A / B / C / D) */
+.option-letter {
+  width:28px; height:28px; border-radius:7px; border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.78rem; font-weight:700; flex-shrink:0;
+  transition:var(--trans); background:var(--surface);
+}
+/* [CSS-9h] Letter circle colour changes to match option state */
+.option-item.selected .option-letter { background:var(--accent); border-color:var(--accent); color:#fff; }
+.option-item.correct  .option-letter { background:var(--green);  border-color:var(--green);  color:#fff; }
+.option-item.wrong    .option-letter { background:var(--red);    border-color:var(--red);    color:#fff; }
+.option-text { font-size:.93rem; color:var(--text); }
+
+/* [CSS-9i] Nav row — Prev on left, Next / Submit on right */
+.nav-row  { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.nav-btn  { display:flex; align-items:center; gap:7px; padding:10px 22px; border-radius:10px; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:.88rem; font-weight:600; transition:var(--trans); }
+.btn-back2         { background:var(--card); color:var(--text); border:1px solid var(--border) !important; }
+.btn-back2:hover   { border-color:var(--muted) !important; }
+.btn-back2:disabled { opacity:.35; cursor:not-allowed; }
+.btn-next          { background:linear-gradient(135deg, var(--gold), var(--gold-dim)); color:#0d0f1a; }
+.btn-next:hover    { filter:brightness(1.1); transform:translateY(-1px); }
+.btn-next:disabled { opacity:.35; cursor:not-allowed; filter:none; transform:none; }
+.btn-submit        { background:linear-gradient(135deg, var(--green), #28a870); color:#fff; }
+.btn-submit:hover  { filter:brightness(1.1); transform:translateY(-1px); }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-10] SCREEN 5 — RESULT SCREEN
+   PURPOSE  : Animated SVG donut chart showing score %, grade
+              badge, correct/wrong stats, and answer review.
+   ══════════════════════════════════════════════════════════════════ */
+.result-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:46px 36px; text-align:center; }
+
+/* [CSS-10a] Donut / ring chart container */
+.result-ring { width:130px; height:130px; margin:0 auto 22px; position:relative; }
+.result-ring svg  { transform:rotate(-90deg); }  /* [CSS-10b] Start fill from top (12 o'clock) */
+.ring-bg   { fill:none; stroke:var(--border); stroke-width:10; }   /* [CSS-10c] Background circle track */
+.ring-fill { fill:none; stroke-width:10; stroke-linecap:round; stroke-dasharray:377; stroke-dashoffset:377; transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1); }
+/* [CSS-10d] stroke-dashoffset animates from 377 (empty) to score-mapped value */
+.ring-text { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.ring-pct  { font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:900; color:#fff; }
+.ring-label{ font-size:.68rem; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+
+/* [CSS-10e] Result metadata text */
+.result-subject   { font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:700; color:#fff; margin-bottom:4px; }
+.result-test-name { font-size:.88rem; color:var(--muted); margin-bottom:6px; }
+.result-grade     { font-size:1.05rem; font-weight:600; margin-bottom:24px; } /* colour set dynamically by JS */
+
+/* [CSS-10f] Stat boxes — Correct / Wrong / Total */
+.result-stats { display:flex; justify-content:center; gap:20px; margin-bottom:28px; flex-wrap:wrap; }
+.stat-box { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 22px; min-width:90px; }
+.stat-val { font-size:1.5rem; font-weight:700; font-family:'Playfair Display',serif; }
+.stat-lbl { font-size:.7rem; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+.val-correct { color:var(--green); }
+.val-wrong   { color:var(--red); }
+.val-total   { color:var(--accent); }
+
+/* [CSS-10g] Action buttons below stats */
+.result-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+.retry-btn     { padding:12px 32px; background:linear-gradient(135deg, var(--gold), var(--gold-dim)); color:#0d0f1a; border:none; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:.95rem; font-weight:700; cursor:pointer; transition:var(--trans); }
+.retry-btn:hover { filter:brightness(1.1); transform:translateY(-2px); }
+.secondary-btn { padding:12px 28px; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:10px; font-family:'DM Sans',sans-serif; font-size:.95rem; font-weight:600; cursor:pointer; transition:var(--trans); }
+.secondary-btn:hover { border-color:var(--muted); }
+
+/* [CSS-10h] Toggle button for showing/hiding the review list */
+.review-toggle { margin-top:20px; background:none; border:1px solid var(--border); color:var(--muted); padding:8px 20px; border-radius:8px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:.83rem; transition:var(--trans); }
+.review-toggle:hover { border-color:var(--accent); color:var(--text); }
+
+/* [CSS-10i] Review list — hidden by default, toggled by JS */
+#review-list { margin-top:24px; text-align:left; display:none; }
+.review-item { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:10px; }
+.review-q    { font-size:.88rem; color:var(--text); margin-bottom:8px; font-weight:500; }
+.review-a    { font-size:.78rem; padding:3px 9px; border-radius:6px; display:inline-block; margin:3px 0; }
+.review-a.correct { background:rgba(62,207,142,0.15);  color:var(--green);  } /* [CSS-10j] User picked AND it was right */
+.review-a.wrong   { background:rgba(245,101,101,0.15); color:var(--red);    } /* [CSS-10k] User picked but it was wrong */
+.review-a.answer  { background:rgba(90,141,238,0.15);  color:var(--accent); } /* [CSS-10l] The right answer (when user got it wrong) */
+
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-11] SCREEN 6 — STUDENT DASHBOARD
+   PURPOSE  : Student's personal results history table + global
+              leaderboard, organised in two tabs.
+   ══════════════════════════════════════════════════════════════════ */
+.dashboard-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:10px; }
+.dashboard-header h2 { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:900; color:#fff; }
+.dashboard-header p  { color:var(--muted); font-size:.88rem; }
+
+/* [CSS-11a] Tab navigation bar */
+.dashboard-tabs { display:flex; gap:6px; margin-bottom:24px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.tab-btn { padding:9px 16px; background:none; border:none; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:.84rem; font-weight:500; cursor:pointer; transition:var(--trans); border-bottom:2px solid transparent; margin-bottom:-1px; }
+.tab-btn:hover { color:var(--text); }
+.tab-btn.active { color:var(--gold); border-bottom-color:var(--gold); font-weight:600; } /* [CSS-11b] Gold underline on active tab */
+
+/* [CSS-11c] Tab content panels — only .active is visible */
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+
+/* [CSS-11d] Results data table */
+.results-table { width:100%; border-collapse:collapse; }
+.results-table th, .results-table td { padding:11px 14px; text-align:left; border-bottom:1px solid var(--border); font-size:.86rem; }
+.results-table th { color:var(--muted); font-weight:500; font-size:.73rem; text-transform:uppercase; letter-spacing:1px; }
+.results-table td { color:var(--text); }
+
+/* [CSS-11e] Score pill — colour coded by performance range */
+.score-pill { display:inline-block; padding:3px 9px; border-radius:99px; font-size:.78rem; font-weight:700; }
+.score-high { background:rgba(62,207,142,0.15);  color:var(--green);  } /* [CSS-11f] 75%+ */
+.score-mid  { background:rgba(90,141,238,0.15);  color:var(--accent); } /* [CSS-11g] 50-74% */
+.score-low  { background:rgba(245,101,101,0.15); color:var(--red);    } /* [CSS-11h] < 50% */
+
+/* [CSS-11i] Leaderboard entry rows */
+.leaderboard-item { display:flex; align-items:center; gap:12px; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 16px; margin-bottom:8px; transition:var(--trans); }
+.leaderboard-item:hover { border-color:rgba(245,200,66,0.3); }
+.lb-rank   { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:900; width:30px; flex-shrink:0; text-align:center; }
+/* [CSS-11j] Medal colour classes */
+.lb-rank-1 { color:var(--gold); }    /* 🥇 */
+.lb-rank-2 { color:#c0c0c0; }        /* 🥈 */
+.lb-rank-3 { color:#cd7f32; }        /* 🥉 */
+.lb-rank-n { color:var(--muted); }
+.lb-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--gold-dim)); display:flex; align-items:center; justify-content:center; font-size:.82rem; font-weight:700; color:#fff; flex-shrink:0; }
+.lb-info   { flex:1; }
+.lb-name   { font-size:.88rem; font-weight:600; color:var(--text); }
+.lb-sub    { font-size:.73rem; color:var(--muted); }
+.lb-score  { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:900; color:var(--gold); }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-12] SCREEN 7 — ADMIN PANEL
+   PURPOSE  : Admin-only screen. Stat overview cards at top, then
+              5 tabs: Create Test, Add Question, Bulk Upload,
+              Manage Tests, All Results.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* [CSS-12a] 4-column overview stat cards */
+.admin-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:22px; }
+.admin-stat  { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; text-align:center; }
+.admin-stat-val { font-size:1.7rem; font-weight:900; font-family:'Playfair Display',serif; color:var(--gold); }
+.admin-stat-lbl { font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+
+/* [CSS-12b] Admin panel inner content box */
+.admin-panel { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:26px; }
+.admin-panel h3 { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; color:#fff; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+
+/* [CSS-12c] Form controls — shared across all admin forms */
+.form-group    { margin-bottom:13px; }
+.form-group label { display:block; font-size:.74rem; text-transform:uppercase; letter-spacing:1px; color:var(--muted); font-weight:500; margin-bottom:5px; }
+.form-input, .form-select, .form-textarea {
+  width:100%; padding:9px 13px;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:8px; color:var(--text);
+  font-family:'DM Sans',sans-serif; font-size:.88rem;
+  transition:var(--trans); outline:none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color:var(--accent); } /* [CSS-12d] Blue outline on focus */
+.form-select option { background:var(--surface); }
+
+/* [CSS-12e] Textarea for bulk JSON paste */
+.form-textarea { resize:vertical; min-height:160px; font-family:monospace; font-size:.8rem; }
+
+/* [CSS-12f] Primary (gold) submit button */
+.form-submit { width:100%; padding:11px; background:linear-gradient(135deg, var(--gold), var(--gold-dim)); color:#0d0f1a; border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:.9rem; font-weight:700; cursor:pointer; transition:var(--trans); margin-top:6px; }
+.form-submit:hover { filter:brightness(1.1); }
+
+/* [CSS-12g] Secondary (blue) submit button */
+.form-submit-alt { width:100%; padding:11px; background:linear-gradient(135deg, var(--accent), #3a6dc8); color:#fff; border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:.9rem; font-weight:700; cursor:pointer; transition:var(--trans); margin-top:6px; }
+.form-submit-alt:hover { filter:brightness(1.1); }
+
+/* [CSS-12h] Row for a single test in Manage Tests list */
+.test-list-item { display:flex; align-items:center; justify-content:space-between; padding:11px 14px; background:var(--surface); border:1px solid var(--border); border-radius:10px; margin-bottom:7px; gap:8px; }
+.test-list-name { font-size:.88rem; font-weight:600; color:var(--text); }
+.test-list-meta { font-size:.73rem; color:var(--muted); }
+
+/* [CSS-12i] Danger (red) delete button */
+.delete-btn { background:rgba(245,101,101,0.1); border:1px solid rgba(245,101,101,0.3); color:var(--red); border-radius:6px; padding:4px 9px; font-size:.73rem; cursor:pointer; font-family:'DM Sans',sans-serif; transition:var(--trans); }
+.delete-btn:hover { background:rgba(245,101,101,0.2); }
+
+/* [CSS-12j] Edit button — blue tint */
+.edit-q-btn { background:rgba(90,141,238,0.1); border:1px solid rgba(90,141,238,0.3); color:var(--accent); border-radius:6px; padding:4px 9px; font-size:.73rem; cursor:pointer; font-family:'DM Sans',sans-serif; transition:var(--trans); }
+.edit-q-btn:hover { background:rgba(90,141,238,0.2); }
+
+/* [CSS-12k] NEW — Rewrite button — amber/orange tint (distinct from Edit) */
+.rewrite-q-btn { background:rgba(245,180,50,0.1); border:1px solid rgba(245,180,50,0.35); color:var(--gold); border-radius:6px; padding:4px 9px; font-size:.73rem; cursor:pointer; font-family:'DM Sans',sans-serif; transition:var(--trans); }
+.rewrite-q-btn:hover { background:rgba(245,180,50,0.2); }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-13] TOAST NOTIFICATION
+   PURPOSE  : Brief feedback bubble that slides up from bottom-right
+              for 3 seconds then slides away. Colour is set by JS.
+   ══════════════════════════════════════════════════════════════════ */
+#toast {
+  position:fixed; bottom:24px; right:24px;
+  background:var(--card); border:1px solid var(--green);
+  color:var(--green); border-radius:10px;
+  padding:11px 20px; font-size:.85rem; font-weight:600;
+  z-index:999;
+  transform:translateY(80px); opacity:0; /* [CSS-13a] Hidden/off-screen by default */
+  transition:0.35s ease;
+}
+#toast.show { transform:translateY(0); opacity:1; } /* [CSS-13b] Slide up into view */
+
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-14] EDIT QUESTION MODAL (minor field edits)
+   PURPOSE  : Full-screen backdrop with a centred form.
+              Admin can update individual fields of a question.
+   ══════════════════════════════════════════════════════════════════ */
+.modal-overlay {
+  display:none; position:fixed; inset:0;     /* [CSS-14a] Cover entire viewport */
+  background:rgba(0,0,0,0.75); z-index:500; /* [CSS-14b] Dark translucent backdrop */
+  align-items:center; justify-content:center;
+}
+.modal-overlay.open { display:flex; } /* [CSS-14c] Flex to centre the modal box */
+.modal-box {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:32px;
+  width:100%; max-width:520px;
+  max-height:90vh; overflow-y:auto; /* [CSS-14d] Scroll if content taller than 90vh */
+  margin:20px;
+}
+.modal-box h3 { font-family:'Playfair Display',serif; font-size:1.15rem; color:#fff; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-15] REWRITE QUESTION MODAL  ← NEW FEATURE
+   PURPOSE  : Separate modal for FULLY rewriting a question.
+              Visually distinct: amber/gold border to signal
+              "destructive but powerful" intent.
+   ══════════════════════════════════════════════════════════════════ */
+#rewrite-modal {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.80); z-index:600; /* [CSS-15a] Higher z-index than edit modal */
+  align-items:center; justify-content:center; padding:20px;
+}
+#rewrite-modal.open { display:flex; }
+
+/* [CSS-15b] Amber-bordered box to distinguish from Edit modal */
+#rewrite-modal .modal-box {
+  border-color:rgba(245,180,50,0.35);
+  max-width:560px;
+}
+#rewrite-modal .modal-box h3 {
+  color:var(--gold); /* [CSS-15c] Gold heading to reinforce the "rewrite" brand */
+  border-bottom-color:rgba(245,180,50,0.2);
+}
+
+/* [CSS-15d] Warning banner inside rewrite modal */
+.rewrite-warning {
+  background:rgba(245,180,50,0.08);
+  border:1px solid rgba(245,180,50,0.25);
+  border-radius:8px; padding:10px 14px;
+  font-size:.78rem; color:var(--gold);
+  margin-bottom:16px;
+}
+
+/* [CSS-15e] Gold "Save Rewrite" button */
+.rewrite-submit {
+  width:100%; padding:11px;
+  background:linear-gradient(135deg, var(--gold), var(--gold-dim));
+  color:#0d0f1a; border:none; border-radius:8px;
+  font-family:'DM Sans',sans-serif; font-size:.9rem; font-weight:700;
+  cursor:pointer; transition:var(--trans); margin-top:6px;
+}
+.rewrite-submit:hover { filter:brightness(1.1); }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-16] BULK UPLOAD — JSON FORMAT GUIDE
+   PURPOSE  : Visual code-example box shown above the JSON textarea
+              so admin knows the expected format.
+   ══════════════════════════════════════════════════════════════════ */
+.json-guide {
+  background:rgba(90,141,238,0.07);
+  border:1px solid rgba(90,141,238,0.25);
+  border-radius:8px; padding:14px 16px;
+  margin-bottom:16px;
+}
+.json-guide p   { font-size:.78rem; color:var(--muted); margin-bottom:8px; }
+.json-guide code {
+  display:block;
+  background:var(--bg); color:var(--green);
+  border-radius:6px; padding:10px 12px;
+  font-family:monospace; font-size:.75rem;
+  line-height:1.6; white-space:pre-wrap; word-break:break-all;
+  border:1px solid var(--border);
+}
+
+/* [CSS-16a] Feedback message shown after bulk import attempt */
+.bulk-feedback {
+  margin-top:12px; padding:10px 14px;
+  border-radius:8px; font-size:.82rem; font-weight:600;
+  display:none;
+}
+.bulk-feedback.ok    { background:rgba(62,207,142,0.12);  border:1px solid rgba(62,207,142,0.3);  color:var(--green); }
+.bulk-feedback.error { background:rgba(245,101,101,0.12); border:1px solid rgba(245,101,101,0.3); color:var(--red);   }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   [CSS-17] MOBILE RESPONSIVE BREAKPOINTS
+   PURPOSE  : Adjust layout for screens ≤ 600 px wide.
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width:600px) {
+  header         { padding:12px 16px; }          /* [CSS-17a] Tighter header on mobile */
+  .admin-stats   { grid-template-columns:1fr 1fr; } /* [CSS-17b] 2-col stats on mobile */
+  main           { padding:28px 12px 50px; }     /* [CSS-17c] Less padding on mobile */
+  .question-card { padding:20px 16px; }          /* [CSS-17d] Slimmer question card */
+  .result-card   { padding:28px 16px; }          /* [CSS-17e] Slimmer result card */
+  .auth-card     { padding:32px 18px; }          /* [CSS-17f] Slimmer auth card */
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════
+     [HTML-1]  HEADER BAR
+     CONTAINS : Logo block | Timer badge | User info | Auth button
+     ════════════════════════════════════════════════════════════════ -->
+<header>
+
+  <!-- [HTML-1a] Logo: gold square icon + academy name + subtitle -->
+  <div class="logo-wrap">
+    <div class="logo-icon">🎓</div>
+    <div class="logo-text">
+      <h1>Sir Syed Academy Jauharabad</h1>
+      <span>Online Cadet Test Preparation</span>
+    </div>
+  </div>
+
+  <!-- [HTML-1b] Right-side controls group -->
+  <div class="header-right">
+
+    <!-- [HTML-1c] Countdown timer — visible ONLY during active quiz.
+                  JS adds .danger class when ≤ 10 s remain (red + pulse). -->
+    <div id="timer-badge">⏱ 60s</div>
+
+    <!-- [HTML-1d] "Signed in as NAME" text — hidden until login.
+                  JS sets inner <span> to the user's name. -->
+    <div id="header-user-info">Signed in as <span id="header-user-name">—</span></div>
+
+    <!-- [HTML-1e] Login / Logout toggle button.
+                  handleHeaderAuth() decides which action to take. -->
+    <button id="header-auth-btn" class="btn-login" onclick="handleHeaderAuth()">Sign In</button>
+  </div>
+</header>
+
+<!-- [HTML-2] Toast notification — slides up from bottom-right for 3 s.
+              showToast(msg, colour) sets content and triggers .show class. -->
+<div id="toast"></div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     [HTML-3]  EDIT QUESTION MODAL  (minor field edits)
+     TRIGGER  : Admin clicks "✏️ Edit" button in Manage Tests tab.
+     PURPOSE  : Admin can update question text, options A-D,
+                and the correct answer individually.
+     ════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-box">
+    <h3>✏️ Edit Question</h3>
+
+    <!-- [HTML-3a] Hidden fields carry the question's position references -->
+    <input type="hidden" id="edit-q-idx">
+    <input type="hidden" id="edit-q-testId">
+
+    <!-- [HTML-3b] Question text input -->
+    <div class="form-group">
+      <label>Question Text</label>
+      <input class="form-input" id="edit-q-text" placeholder="Enter question text">
+    </div>
+
+    <!-- [HTML-3c] Option inputs (A-D) are injected here by openEditQuestion() -->
+    <div id="edit-options-container"></div>
+
+    <!-- [HTML-3d] Correct answer selector -->
+    <div class="form-group">
+      <label>Correct Answer</label>
+      <select class="form-select" id="edit-q-answer">
+        <option value="0">A</option>
+        <option value="1">B</option>
+        <option value="2">C</option>
+        <option value="3">D</option>
+      </select>
+    </div>
+
+    <!-- [HTML-3e] Save + Cancel buttons -->
+    <button class="form-submit" onclick="saveEditedQuestion()">💾 Save Changes</button>
+    <button class="secondary-btn" onclick="closeEditModal()" style="width:100%;margin-top:8px;">Cancel</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     [HTML-4]  REWRITE QUESTION MODAL  ← NEW FEATURE
+     TRIGGER  : Admin clicks "✍️ Rewrite" button in Manage Tests.
+     PURPOSE  : Admin can COMPLETELY replace a question — all text,
+                all 4 option labels, and the correct answer index.
+                This is more powerful than Edit (which adjusts fields).
+     ════════════════════════════════════════════════════════════════ -->
+<div id="rewrite-modal">
+  <div class="modal-box">
+    <h3>✍️ Rewrite Question</h3>
+
+    <!-- [HTML-4a] Warning banner explaining the destructive nature -->
+    <div class="rewrite-warning">
+      ⚠️ <strong>Full Rewrite Mode:</strong> This will completely replace the question
+      text, all 4 options, and the correct answer. Use Edit (✏️) for small changes.
+    </div>
+
+    <!-- [HTML-4b] Hidden fields carry references to the question being rewritten -->
+    <input type="hidden" id="rw-q-idx">
+    <input type="hidden" id="rw-q-testId">
+
+    <!-- [HTML-4c] Question text — full free-text replacement -->
+    <div class="form-group">
+      <label>New Question Text</label>
+      <input class="form-input" id="rw-q-text" placeholder="Type the complete new question text here…">
+    </div>
+
+    <!-- [HTML-4d] Option A -->
+    <div class="form-group">
+      <label>Option A</label>
+      <input class="form-input" id="rw-opt0" placeholder="Option A text">
+    </div>
+
+    <!-- [HTML-4e] Option B -->
+    <div class="form-group">
+      <label>Option B</label>
+      <input class="form-input" id="rw-opt1" placeholder="Option B text">
+    </div>
+
+    <!-- [HTML-4f] Option C -->
+    <div class="form-group">
+      <label>Option C</label>
+      <input class="form-input" id="rw-opt2" placeholder="Option C text">
+    </div>
+
+    <!-- [HTML-4g] Option D -->
+    <div class="form-group">
+      <label>Option D</label>
+      <input class="form-input" id="rw-opt3" placeholder="Option D text">
+    </div>
+
+    <!-- [HTML-4h] Correct answer selector -->
+    <div class="form-group">
+      <label>Correct Answer</label>
+      <select class="form-select" id="rw-q-answer">
+        <option value="0">A — Option A</option>
+        <option value="1">B — Option B</option>
+        <option value="2">C — Option C</option>
+        <option value="3">D — Option D</option>
+      </select>
+    </div>
+
+    <!-- [HTML-4i] Save rewrite + cancel actions -->
+    <button class="rewrite-submit" onclick="saveRewrittenQuestion()">✍️ Save Full Rewrite</button>
+    <button class="secondary-btn" onclick="closeRewriteModal()" style="width:100%;margin-top:8px;">Cancel</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     [HTML-5]  MAIN CONTENT — ALL SCREENS
+     Only the .screen that also has .active is displayed.
+     showScreen(id) handles the switch.
+     ════════════════════════════════════════════════════════════════ -->
+<main>
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  [SCREEN-1]  LOGIN / AUTH                   ║
+       ║  PURPOSE : Entry point for all users.        ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section id="login-screen" class="screen active">
+    <div class="auth-card" style="max-width:460px;margin:0 auto;">
+
+      <!-- [HTML-5-1a] Large emoji logo -->
+      <div class="auth-logo">🎓</div>
+      <h2>Welcome Back</h2>
+      <p>Sign in to access your personalised quiz portal, results and leaderboard.</p>
+
+      <!-- [HTML-5-1b] Google OAuth button (requires Firebase in production) -->
+      <button class="google-btn" onclick="googleLogin()">
+        <!-- Google G logo SVG paths -->
+        <svg viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.3 0 24 0 14.7 0 6.7 5.4 2.9 13.3l7.8 6C12.4 13.1 17.7 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.2-.4-4.6H24v8.7h12.4c-.5 2.8-2.2 5.2-4.7 6.8l7.3 5.7c4.3-4 6.1-9.8 6.1-16.6z"/>
+          <path fill="#FBBC05" d="M10.7 28.7a14.5 14.5 0 0 1 0-9.4l-7.8-6A24 24 0 0 0 0 24c0 3.8.9 7.5 2.9 10.7l7.8-6z"/>
+          <path fill="#34A853" d="M24 48c6.3 0 11.6-2.1 15.5-5.7l-7.3-5.7c-2 1.4-4.7 2.2-8.2 2.2-6.3 0-11.6-3.6-13.3-8.8l-7.8 6A23.9 23.9 0 0 0 24 48z"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <!-- [HTML-5-1c] Horizontal "or" divider -->
+      <div class="auth-divider">or use a demo account</div>
+
+      <!-- [HTML-5-1d] Info box about demo mode -->
+      <div class="demo-note">
+        <strong>Demo Mode:</strong> Use demo accounts below to explore the portal.
+        Admin can create tests, add &amp; edit questions, and bulk import.
+      </div>
+
+      <!-- [HTML-5-1e] Student and Admin demo login buttons -->
+      <div class="demo-login-btns">
+        <button class="demo-btn" onclick="demoLogin('student')">👤 Student Login</button>
+        <button class="demo-btn" onclick="demoLogin('admin')">🛡 Admin Login</button>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  [SCREEN-2]  SUBJECT SELECTION              ║
+       ║  PURPOSE : Shows subject cards grid.         ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section id="subject-screen" class="screen">
+
+    <!-- [HTML-5-2a] Hero heading -->
+    <div class="hero">
+      <h2>Choose a <em>Subject</em></h2>
+      <p>Select a subject, then pick the test you want to attempt.</p>
+    </div>
+
+    <!-- [HTML-5-2b] Subject card grid — populated by buildSubjectGrid() -->
+    <div class="subject-grid" id="subject-grid"></div>
+  </section>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  [SCREEN-3]  TEST SELECTION                 ║
+       ║  PURPOSE : Shows tests within a subject.     ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section id="test-screen" class="screen">
+    <div class="screen-header">
+      <!-- [HTML-5-3a] Back to subjects button -->
+      <button class="back-btn" onclick="showSubjectScreen()">← Subjects</button>
+      <div>
+        <!-- [HTML-5-3b] Subject name heading (set by showTestScreen()) -->
+        <h2 id="test-screen-title">Select a Test</h2>
+        <!-- [HTML-5-3c] Test count subtitle -->
+        <p id="test-screen-sub" style="color:var(--muted);font-size:.83rem;margin-top:3px;"></p>
+      </div>
+    </div>
+
+    <!-- [HTML-5-3d] Test card grid — populated by showTestScreen() -->
+    <div class="test-grid" id="test-grid"></div>
+  </section>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  [SCREEN-4]  QUIZ / ACTIVE QUESTION         ║
+       ║  PURPOSE : Shows one question at a time.     ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section id="quiz-screen" class="screen">
+
+    <!-- [HTML-5-4a] Quiz header row: exit button + subject/test name + Q counter -->
+    <div class="quiz-header">
+      <button class="back-btn" onclick="confirmExit()">← Tests</button>
+      <div class="quiz-meta">
+        Subject: <strong id="quiz-subject-name"></strong>
+        — <strong id="quiz-test-name" style="color:var(--accent)"></strong>
+      </div>
+      <div class="quiz-meta">
+        Q <strong id="q-current">1</strong> / <strong id="q-total">10</strong>
+      </div>
+    </div>
+
+    <!-- [HTML-5-4b] Thin progress bar — width% driven by question index -->
+    <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+
+    <!-- [HTML-5-4c] Question display card -->
+    <div class="question-card">
+      <div class="q-number" id="q-number">Question 01</div>  <!-- [HTML-5-4d] e.g. "Question 03" -->
+      <div class="q-text"   id="q-text"></div>                <!-- [HTML-5-4e] Question body text -->
+      <!-- [HTML-5-4f] A-D option items — injected by renderQuestion() -->
+      <ul class="options-list" id="options-list"></ul>
+    </div>
+
+    <!-- [HTML-5-4g] Navigation row: Prev | Next (or Submit on last Q) -->
+    <div class="nav-row">
+      <button class="nav-btn btn-back2" id="btn-prev" onclick="prevQuestion()">← Back</button>
+      <button class="nav-btn btn-next"  id="btn-next" onclick="nextQuestion()">Next →</button>
+      <!-- [HTML-5-4h] Submit button replaces Next on the final question -->
+      <button class="nav-btn btn-submit" id="btn-submit" onclick="submitQuiz()" style="display:none;">Submit ✓</button>
+    </div>
+  </section>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  [SCREEN-5]  RESULT                         ║
+       ║  PURPOSE : Score ring, grade, stats, review. ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section id="result-screen" class="screen">
+    <div class="result-card">
+
+      <!-- [HTML-5-5a] Animated SVG donut chart -->
+      <div class="result-ring">
+        <svg width="130" height="130" viewBox="0 0 130 130">
+          <!-- [HTML-5-5b] Grey background track circle -->
+          <circle class="ring-bg"   cx="65" cy="65" r="60"/>
+          <!-- [HTML-5-5c] Coloured fill arc — stroke-dashoffset animated by JS -->
+          <circle class="ring-fill" cx="65" cy="65" r="60" id="ring-fill"/>
+        </svg>
+        <!-- [HTML-5-5d] Percentage text centred over the ring -->
+        <div class="ring-text">
+          <div class="ring-pct"   id="ring-pct">0%</div>
+          <div class="ring-label">Score</div>
+        </div>
+      </div>
+
+      <!-- [HTML-5-5e] Subject, test name, and grade label -->
+      <div class="result-subject"   id="result-subject"></div>
+      <div class="result-test-name" id="result-test-name"></div>
+      <div class="result-grade"     id="result-grade"></div>
+
+      <!-- [HTML-5-5f] Correct / Wrong / Total stat boxes -->
+      <div class="result-stats">
+        <div class="stat-box"><div class="stat-val val-correct" id="stat-correct">0</div><div class="stat-lbl">Correct</div></div>
+        <div class="stat-box"><div class="stat-val val-wrong"   id="stat-wrong">0</div>  <div class="stat-lbl">Wrong</div></div>
+        <div class="stat-box"><div class="stat-val val-total"   id="stat-total">0</div>  <div class="stat-lbl">Total</div></div>
+      </div>
+
+      <!-- [HTML-5-5g] Post-quiz action buttons -->
+      <div class="result-actions">
+        <button class="retry-btn"     onclick="retryQuiz()">Try Again</button>
+        <button class="secondary-btn" onclick="goToDashboard()">My Dashboard</button>
+        <button class="secondary-btn" onclick="showSubjectScreen()">All Subjects</button>
+      </div>
+
+      <br/>
+      <!-- [HTML-5-5h] Toggle to show/hide the per-question answer review -->
+      <button class="review-toggle" onclick="toggleReview()">📋 Review Answers</button>
+      <!-- [HTML-5-5i] Per-question review rows injected by buildReview() -->
+      <div id="review-list"></div>
+    </div>
+  </section>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  [SCREEN-6]  STUDENT DASHBOARD              ║
+       ║  PURPOSE : Personal results + leaderboard.   ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section id="dashboard-screen" class="screen">
+    <div class="dashboard-header">
+      <div>
+        <h2>My Dashboard</h2>
+        <!-- [HTML-5-6a] Welcome message — personalised by Dashboard.load() -->
+        <p id="dashboard-welcome">Welcome back!</p>
+      </div>
+      <button class="secondary-btn" onclick="showSubjectScreen()">+ Start New Quiz</button>
+    </div>
+
+    <!-- [HTML-5-6b] Tab navigation -->
+    <div class="dashboard-tabs">
+      <button class="tab-btn active" onclick="switchTab('my-results',this)">My Results</button>
+      <button class="tab-btn"        onclick="switchTab('leaderboard',this)">🏆 Leaderboard</button>
+    </div>
+
+    <!-- [HTML-5-6c] My Results tab — table injected by Dashboard.loadMyResults() -->
+    <div id="tab-my-results" class="tab-content active">
+      <table class="results-table">
+        <thead>
+          <tr><th>#</th><th>Subject</th><th>Test</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Date</th></tr>
+        </thead>
+        <tbody id="my-results-body">
+          <tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">No results yet. Take a quiz!</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- [HTML-5-6d] Leaderboard tab — rows injected by Dashboard.loadLeaderboard() -->
+    <div id="tab-leaderboard" class="tab-content">
+      <div id="leaderboard-list"></div>
+    </div>
+  </section>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║  [SCREEN-7]  ADMIN PANEL                    ║
+       ║  PURPOSE : Full admin management interface.  ║
+       ╚══════════════════════════════════════════════╝ -->
+  <section id="admin-screen" class="screen">
+    <div class="dashboard-header">
+      <div>
+        <h2>Admin Panel</h2>
+        <p>Manage tests, questions and monitor all student results.</p>
+      </div>
+    </div>
+
+    <!-- [HTML-5-7a] Overview stat cards — populated by AdminPanel.load() -->
+    <div class="admin-stats">
+      <div class="admin-stat"><div class="admin-stat-val" id="admin-stat-students">—</div><div class="admin-stat-lbl">Students</div></div>
+      <div class="admin-stat"><div class="admin-stat-val" id="admin-stat-attempts">—</div><div class="admin-stat-lbl">Attempts</div></div>
+      <div class="admin-stat"><div class="admin-stat-val" id="admin-stat-tests">—</div>   <div class="admin-stat-lbl">Tests</div></div>
+      <div class="admin-stat"><div class="admin-stat-val" id="admin-stat-questions">—</div><div class="admin-stat-lbl">Questions</div></div>
+    </div>
+
+    <!-- [HTML-5-7b] Admin tab navigation bar -->
+    <div class="dashboard-tabs" id="admin-tabs">
+      <button class="tab-btn active" onclick="switchAdminTab('create-test',this)">➕ Create Test</button>
+      <button class="tab-btn"        onclick="switchAdminTab('add-question',this)">📝 Add Question</button>
+      <button class="tab-btn"        onclick="switchAdminTab('bulk-upload',this)">📤 Bulk Upload</button>
+      <button class="tab-btn"        onclick="switchAdminTab('manage-tests',this)">📋 Manage Tests</button>
+      <button class="tab-btn"        onclick="switchAdminTab('all-results',this)">📊 All Results</button>
+    </div>
+
+    <div style="margin-top:20px;">
+
+      <!-- ── [ADMIN-TAB-1] CREATE TEST ────────────────────────────── -->
+      <div id="admin-tab-create-test" class="tab-content active">
+        <div style="max-width:500px;">
+          <div class="admin-panel">
+            <h3>➕ Create New Test</h3>
+            <p style="font-size:.8rem;color:var(--muted);margin-bottom:16px;">
+              Create an empty test container. Add questions via "Add Question" or "Bulk Upload".
+            </p>
+            <!-- Subject dropdown -->
+            <div class="form-group">
+              <label>Subject</label>
+              <select class="form-select" id="ct-subject">
+                <option value="Mathematics">Mathematics</option>
+                <option value="GeneralScience">General Science</option>
+                <option value="English">English</option>
+                <option value="History">History</option>
+                <option value="Computer">Computer</option>
+              </select>
+            </div>
+            <!-- Test name input -->
+            <div class="form-group">
+              <label>Test Name</label>
+              <input class="form-input" id="ct-name" placeholder="e.g. Chapter 1 Practice Test"/>
+            </div>
+            <!-- Duration in seconds -->
+            <div class="form-group">
+              <label>Duration (seconds)</label>
+              <input class="form-input" id="ct-duration" type="number" value="60" min="30" max="3600"/>
+            </div>
+            <button class="form-submit-alt" onclick="adminCreateTest()">Create Test</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── [ADMIN-TAB-2] ADD SINGLE QUESTION ────────────────────── -->
+      <div id="admin-tab-add-question" class="tab-content">
+        <div style="max-width:500px;">
+          <div class="admin-panel">
+            <h3>📝 Add Question to Test</h3>
+            <p style="font-size:.8rem;color:var(--muted);margin-bottom:16px;">
+              Select a test, fill in the question, four options, and mark the correct answer.
+            </p>
+            <!-- Subject selector — changing it refreshes the test dropdown -->
+            <div class="form-group">
+              <label>Subject</label>
+              <select class="form-select" id="aq-subject" onchange="refreshTestDropdown('aq-subject','aq-test')">
+                <option value="Mathematics">Mathematics</option>
+                <option value="GeneralScience">General Science</option>
+                <option value="English">English</option>
+                <option value="History">History</option>
+                <option value="Computer">Computer</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Select Test</label>
+              <select class="form-select" id="aq-test"></select>
+            </div>
+            <div class="form-group"><label>Question</label><input class="form-input" id="aq-question" placeholder="Enter question text"/></div>
+            <div class="form-group"><label>Option A</label><input class="form-input" id="aq-opt0" placeholder="Option A"/></div>
+            <div class="form-group"><label>Option B</label><input class="form-input" id="aq-opt1" placeholder="Option B"/></div>
+            <div class="form-group"><label>Option C</label><input class="form-input" id="aq-opt2" placeholder="Option C"/></div>
+            <div class="form-group"><label>Option D</label><input class="form-input" id="aq-opt3" placeholder="Option D"/></div>
+            <div class="form-group">
+              <label>Correct Answer</label>
+              <select class="form-select" id="aq-answer">
+                <option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option>
+              </select>
+            </div>
+            <button class="form-submit" onclick="adminAddQuestion()">Add Question</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── [ADMIN-TAB-3] BULK UPLOAD ─────────────────────────────── -->
+      <div id="admin-tab-bulk-upload" class="tab-content">
+        <div style="max-width:600px;">
+          <div class="admin-panel">
+            <h3>📤 Bulk Import Questions</h3>
+
+            <!-- JSON format guide box -->
+            <div class="json-guide">
+              <p>Paste a <strong style="color:var(--text)">JSON array</strong>. Each object must have exactly these fields:</p>
+              <code>[
+  {
+    "q": "Your question text here?",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "answer": 0
+  }
+]</code>
+              <p style="margin-top:8px;color:var(--accent)">
+                <strong>answer</strong> is the <em>zero-based index</em> (0=A, 1=B, 2=C, 3=D).
+              </p>
+            </div>
+
+            <div class="form-group">
+              <label>Subject</label>
+              <select class="form-select" id="bulk-subject" onchange="refreshTestDropdown('bulk-subject','bulk-test')">
+                <option value="Mathematics">Mathematics</option>
+                <option value="GeneralScience">General Science</option>
+                <option value="English">English</option>
+                <option value="History">History</option>
+                <option value="Computer">Computer</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Target Test</label>
+              <select class="form-select" id="bulk-test"></select>
+            </div>
+            <div class="form-group">
+              <label>JSON Array</label>
+              <textarea class="form-textarea" id="bulk-json"
+                placeholder='[{"q":"What is 2+2?","options":["1","2","3","4"],"answer":3}]'></textarea>
+            </div>
+            <button class="form-submit" onclick="adminBulkUpload()">⬆ Import Questions</button>
+            <!-- Feedback appears here after import attempt -->
+            <div class="bulk-feedback" id="bulk-feedback"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── [ADMIN-TAB-4] MANAGE TESTS ────────────────────────────── -->
+      <div id="admin-tab-manage-tests" class="tab-content">
+        <div class="form-group" style="max-width:240px;margin-bottom:18px;">
+          <label>Filter by Subject</label>
+          <select class="form-select" id="mt-filter" onchange="renderTestList()">
+            <option value="">All Subjects</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="GeneralScience">General Science</option>
+            <option value="English">English</option>
+            <option value="History">History</option>
+            <option value="Computer">Computer</option>
+          </select>
+        </div>
+        <!-- Test rows with question sub-rows injected by renderTestList() -->
+        <div id="manage-tests-list"></div>
+      </div>
+
+      <!-- ── [ADMIN-TAB-5] ALL RESULTS ────────────────────────────── -->
+      <div id="admin-tab-all-results" class="tab-content">
+        <div id="admin-results-list" style="max-height:580px;overflow-y:auto;"></div>
+      </div>
+
+    </div><!-- /admin tab content wrapper -->
+  </section>
+
+</main>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     [JS]  JAVASCRIPT — ALL APPLICATION LOGIC
+     ════════════════════════════════════════════════════════════════ -->
+<script>
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-1]  TEST BANK (In-Memory Database)
+   PURPOSE : Stores all subjects, their tests, and questions.
+             In production this would be fetched from a server/DB.
+   STRUCTURE:
+     TEST_BANK = {
+       SubjectKey: {
+         icon: "emoji",
+         tests: [
+           {
+             id: "unique_id",
+             name: "Test Name",
+             duration: 90,         // seconds
+             questions: [
+               { q: "text", options: ["A","B","C","D"], answer: 0 }
+             ]
+           }
+         ]
+       }
+     }
+   ════════════════════════════════════════════════════════════════ */
+const TEST_BANK = {
+  Mathematics: { icon:"📐", tests:[
+    { id:"math_t1", name:"Arithmetic & Algebra", duration:90, questions:[
+      { q:"What is 15% of 200?",                              options:["25","30","35","40"],                                answer:1 },
+      { q:"Solve: 2x + 6 = 18. What is x?",                  options:["4","5","6","7"],                                   answer:2 },
+      { q:"What is the HCF of 36 and 48?",                   options:["6","8","12","18"],                                 answer:2 },
+      { q:"If the average of 5 numbers is 10, their sum?",   options:["45","50","55","60"],                               answer:1 },
+      { q:"What is 3⁴?",                                     options:["64","81","72","91"],                               answer:1 }
+    ]},
+    { id:"math_t2", name:"Geometry & Mensuration", duration:90, questions:[
+      { q:"Value of π rounded to 2 decimal places?",         options:["3.14","3.41","3.12","3.16"],                      answer:0 },
+      { q:"Square root of 144?",                             options:["11","12","13","14"],                               answer:1 },
+      { q:"Triangle with angles 60°, 60°, 60° is?",         options:["Isosceles","Scalene","Right-angled","Equilateral"],answer:3 },
+      { q:"Area of circle with radius 7 (π≈22/7)?",         options:["154","144","164","134"],                           answer:0 },
+      { q:"Which number is prime?",                          options:["21","27","29","33"],                               answer:2 }
+    ]}
+  ]},
+  GeneralScience: { icon:"🔬", tests:[
+    { id:"sci_t1", name:"Physics & Chemistry", duration:90, questions:[
+      { q:"Chemical symbol for Gold?",                       options:["Go","Gd","Au","Ag"],                               answer:2 },
+      { q:"Speed of light is approximately:",                options:["3×10⁶ m/s","3×10⁸ m/s","3×10¹⁰ m/s","3×10⁴ m/s"],answer:1 },
+      { q:"Most abundant gas in Earth's atmosphere?",        options:["Oxygen","Carbon Dioxide","Nitrogen","Hydrogen"],   answer:2 },
+      { q:"Water boils at ___ °C at standard pressure.",    options:["90","95","100","105"],                             answer:2 },
+      { q:"Atomic number of Carbon?",                        options:["4","6","8","12"],                                  answer:1 }
+    ]},
+    { id:"sci_t2", name:"Biology & Space", duration:90, questions:[
+      { q:"Bones in adult human body?",                      options:["196","206","216","226"],                           answer:1 },
+      { q:"The Red Planet is?",                              options:["Jupiter","Venus","Saturn","Mars"],                  answer:3 },
+      { q:"Powerhouse of the cell?",                         options:["Nucleus","Ribosome","Mitochondria","Lysosome"],    answer:2 },
+      { q:"Force keeping planets in orbit?",                 options:["Magnetic","Nuclear","Gravitational","Friction"],   answer:2 },
+      { q:"DNA stands for:",                                 options:["Deoxyribose Nucleic Acid","Double Nucleic Acid","Deoxyribonucleic Acid","Digital Nucleic Acid"], answer:2 }
+    ]}
+  ]},
+  English: { icon:"📖", tests:[
+    { id:"eng_t1", name:"Grammar & Vocabulary", duration:80, questions:[
+      { q:"'She ___ to school every day.'",                  options:["go","goes","going","gone"],                        answer:1 },
+      { q:"Antonym of 'generous'?",                          options:["Kind","Stingy","Brave","Humble"],                  answer:1 },
+      { q:"'Verbose' means?",                                options:["Brief","Using more words than needed","Clear","Poetic"],answer:1 },
+      { q:"Plural of 'criterion'?",                          options:["Criterions","Criteria","Criterias","Criterion"],   answer:1 },
+      { q:"Correct spelling:",                               options:["Accomodate","Acommodate","Accommodate","Acomodate"],answer:2 }
+    ]},
+    { id:"eng_t2", name:"Sentences & Usage", duration:80, questions:[
+      { q:"Noun in: 'The quick brown fox jumps.'",           options:["quick","brown","fox","jumps"],                     answer:2 },
+      { q:"Passive voice sentence?",                         options:["The chef cooked the meal.","The meal was cooked by the chef.","She baked a cake.","He wrote a letter."],answer:1 },
+      { q:"'She was over the moon' is an example of:",       options:["Simile","Metaphor","Idiom","Alliteration"],        answer:2 },
+      { q:"Compound sentence?",                              options:["She runs fast.","She runs fast and he walks slow.","Although she runs fast.","Running is fun."],answer:1 },
+      { q:"Correct sentence:",                               options:["Their going to the market.","There going to the market.","They're going to the market.","Theyre going to the market."],answer:2 }
+    ]}
+  ]},
+  History: { icon:"🏛️", tests:[
+    { id:"his_t1", name:"Pakistan & South Asia", duration:80, questions:[
+      { q:"Pakistan's independence year?",                   options:["1945","1946","1947","1948"],                       answer:2 },
+      { q:"First President of Pakistan?",                    options:["Liaquat Ali Khan","Ayub Khan","Iskander Mirza","Muhammad Ali Jinnah"],answer:2 },
+      { q:"Mohenjo-daro is located in:",                    options:["India","Afghanistan","Pakistan","Bangladesh"],      answer:2 },
+      { q:"Akbar the Great ruled the:",                     options:["Ottoman Empire","Mughal Empire","Persian Empire","Mongol Empire"],answer:1 },
+      { q:"Partition of Bengal occurred in:",               options:["1903","1905","1907","1909"],                       answer:1 }
+    ]},
+    { id:"his_t2", name:"World History", duration:80, questions:[
+      { q:"First World War ended in:",                       options:["1916","1917","1918","1919"],                       answer:2 },
+      { q:"Who was compelled to seal the Magna Carta?",     options:["King Richard I","King John","Pope Innocent III","Simon de Montfort"],answer:1 },
+      { q:"Berlin Wall fell in:",                           options:["1987","1988","1989","1990"],                       answer:2 },
+      { q:"United Nations founded in:",                     options:["1943","1944","1945","1946"],                       answer:2 },
+      { q:"Who reached the Americas in 1492?",              options:["Vasco da Gama","Ferdinand Magellan","Christopher Columbus","Amerigo Vespucci"],answer:2 }
+    ]}
+  ]},
+  Computer: { icon:"💻", tests:[
+    { id:"comp_t1", name:"Hardware & OS Basics", duration:70, questions:[
+      { q:"CPU stands for?",                                 options:["Central Processing Unit","Computer Processing Unit","Central Program Unit","Core Processing Unit"],answer:0 },
+      { q:"Which is NOT an operating system?",              options:["Linux","Windows","Oracle","macOS"],                 answer:2 },
+      { q:"RAM stands for?",                                options:["Read Access Memory","Random Access Memory","Rapid Access Module","Read And Memory"],answer:1 },
+      { q:"Father of the modern computer?",                 options:["Bill Gates","Alan Turing","Charles Babbage","Steve Jobs"],answer:2 },
+      { q:"LIFO principle data structure?",                 options:["Queue","Array","Stack","Linked List"],              answer:2 }
+    ]},
+    { id:"comp_t2", name:"Programming & Networks", duration:70, questions:[
+      { q:"HTML stands for?",                               options:["Hyper Text Markup Language","High Text Machine Language","Hyper Transfer Markup Language","Hyper Text Machine Learning"],answer:0 },
+      { q:"Binary equivalent of decimal 10?",              options:["1000","1010","1001","1100"],                        answer:1 },
+      { q:"OSI layer responsible for routing?",            options:["Data Link","Transport","Network","Session"],        answer:2 },
+      { q:"SQL stands for?",                               options:["Structured Query Language","Simple Query Language","Standard Query Logic","Stored Query Language"],answer:0 },
+      { q:"Single-line comment symbol in JavaScript?",     options:["#","//","--","/*"],                                 answer:1 }
+    ]}
+  ]}
+};
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-2]  UTILITY FUNCTIONS
+   ════════════════════════════════════════════════════════════════ */
+
+/* [JS-2a] subjectLabel(key)
+   PURPOSE : Convert internal key "GeneralScience" → "General Science".
+             All other subject keys already match their display names.
+   INPUT   : key — string key from TEST_BANK
+   RETURNS : Human-readable subject name string */
+function subjectLabel(key) {
+  return key === 'GeneralScience' ? 'General Science' : key;
+}
+
+/* [JS-2b] findTest(testId)
+   PURPOSE : Search all subjects in TEST_BANK for a test by its ID.
+   INPUT   : testId — unique string like "math_t1"
+   RETURNS : { subj, test } object, or null if not found */
+function findTest(testId) {
+  for (const subj in TEST_BANK) {
+    const test = TEST_BANK[subj].tests.find(t => t.id === testId);
+    if (test) return { subj, test };
+  }
+  return null;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-3]  AUTH MODULE  (IIFE — Immediately Invoked Function Expression)
+   PURPOSE : Manages current user state as a private closure.
+             No other code can directly read/modify currentUser —
+             it must go through these exported functions.
+   EXPORTS : googleLogin, demoLogin, logout, getUser, isAdmin
+   ════════════════════════════════════════════════════════════════ */
+const Auth = (() => {
+  let currentUser = null; /* [JS-3a] null = no one logged in */
+
+  /* [JS-3b] googleLogin()
+     PURPOSE : Placeholder — real implementation requires Firebase SDK.
+               For demo, tells user to use the demo buttons. */
+  function googleLogin() {
+    showToast('Google login requires Firebase. Use demo buttons.', '#f5c842');
+  }
+
+  /* [JS-3c] demoLogin(role)
+     PURPOSE : Set a hardcoded mock user object for demonstration.
+     INPUT   : role — 'admin' or 'student'
+     LOGIC   : Admin gets isAdmin:true which routes to admin-screen */
+  function demoLogin(role) {
+    currentUser = role === 'admin'
+      ? { name:'Admin User',  email:'admin@sirseyed.edu', isAdmin:true  }
+      : { name:'Ahmed Raza',  email:'ahmed@student.edu',  isAdmin:false };
+    onLogin();
+  }
+
+  /* [JS-3d] onLogin()
+     PURPOSE : Called after any successful login.
+               Updates the header UI, then routes to the correct screen. */
+  function onLogin() {
+    updateHeaderAuth();
+    if (currentUser.isAdmin) {
+      /* Admin → go directly to admin panel and load its data */
+      showScreen('admin-screen');
+      AdminPanel.load();
+    } else {
+      /* Student → go to subject selection */
+      showScreen('subject-screen');
+    }
+  }
+
+  /* [JS-3e] logout()
+     PURPOSE : Clear current user, reset header, return to login. */
+  function logout() {
+    currentUser = null;
+    updateHeaderAuth();
+    showScreen('login-screen');
+  }
+
+  /* [JS-3f] updateHeaderAuth()
+     PURPOSE : Sync the header's auth button label and "Signed in as"
+               text to the current login state. Called on login/logout. */
+  function updateHeaderAuth() {
+    const btn  = document.getElementById('header-auth-btn');
+    const info = document.getElementById('header-user-info');
+    const nm   = document.getElementById('header-user-name');
+    if (currentUser) {
+      btn.textContent    = 'Logout';
+      btn.className      = 'btn-logout';
+      info.style.display = 'block';
+      nm.textContent     = currentUser.name;
+    } else {
+      btn.textContent    = 'Sign In';
+      btn.className      = 'btn-login';
+      info.style.display = 'none';
+    }
+  }
+
+  /* [JS-3g] Public API returned from the IIFE */
+  return {
+    googleLogin,
+    demoLogin,
+    logout,
+    getUser:  () => currentUser,            /* Returns the current user object */
+    isAdmin:  () => currentUser?.isAdmin    /* Returns true/false */
+  };
+})();
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-4]  DATABASE MODULE
+   PURPOSE : Persists quiz results in browser localStorage so they
+             survive page refresh. Key: 'ssa_results_v3'.
+   RECORD FORMAT:
+     { id, name, email, subject, testName, score(%), correct,
+       wrong, total, time(ISO string) }
+   ════════════════════════════════════════════════════════════════ */
+const Database = (() => {
+  const KEY = 'ssa_results_v3'; /* [JS-4a] localStorage key — bump version to wipe old data */
+
+  /* [JS-4b] loadAll()
+     PURPOSE : Read and parse all results from localStorage.
+     RETURNS : Array of result objects (empty array if nothing stored) */
+  function loadAll() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+    catch { return []; }
+  }
+
+  /* [JS-4c] saveResult(r)
+     PURPOSE : Prepend a new result record to the stored array.
+               Using unshift so newest results appear first.
+     INPUT   : r — { subject, testName, pct, correct, wrong, total } */
+  function saveResult(r) {
+    const all = loadAll();
+    all.unshift({
+      id:       Date.now(),                     /* Unique timestamp ID */
+      name:     Auth.getUser()?.name  || 'Unknown',
+      email:    Auth.getUser()?.email || 'unknown',
+      subject:  r.subject,
+      testName: r.testName,
+      score:    r.pct,                          /* Percentage score */
+      correct:  r.correct,
+      wrong:    r.wrong,
+      total:    r.total,
+      time:     new Date().toISOString()
+    });
+    localStorage.setItem(KEY, JSON.stringify(all));
+  }
+
+  /* [JS-4d] Public API */
+  return {
+    saveResult,
+    /* Returns only the logged-in student's results */
+    getMyResults:   () => { const e = Auth.getUser()?.email; return loadAll().filter(r => r.email === e); },
+    /* Returns top N results sorted by score descending */
+    getLeaderboard: (n) => loadAll().sort((a,b) => b.score - a.score).slice(0, n || 10),
+    /* Returns every result (admin view) */
+    getAllResults:   () => loadAll()
+  };
+})();
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-5]  QUIZ ENGINE MODULE
+   PURPOSE : Manages all quiz state: loading a test, recording
+             answers, and calculating final results + grade.
+   STATE OBJECT FIELDS:
+     subject, testName, testId, duration, questions[],
+     currentIndex, userAnswers[], shuffled
+   ════════════════════════════════════════════════════════════════ */
+const QuizEngine = (() => {
+
+  /* [JS-5a] Internal state — all quiz progress lives here */
+  let state = {
+    subject:      null,
+    testName:     null,
+    testId:       null,
+    duration:     60,
+    questions:    [],
+    currentIndex: 0,
+    userAnswers:  [],  /* Parallel array to questions[]; null = unanswered */
+    shuffled:     false
+  };
+
+  /* [JS-5b] shuffle(arr)
+     PURPOSE : Fisher-Yates shuffle — mutates a copy, not the original.
+     RETURNS : New shuffled array */
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]]; /* Swap elements */
+    }
+    return a;
+  }
+
+  /* [JS-5c] load(subjectName, testId, doShuffle)
+     PURPOSE : Initialise state for a new quiz attempt.
+     INPUT   : subjectName — display name string
+               testId      — unique test ID string
+               doShuffle   — boolean: randomise question order? */
+  function load(subjectName, testId, doShuffle) {
+    const found = findTest(testId);
+    if (!found) { showToast('Test not found!', '#f56565'); return; }
+    const { test } = found;
+    state.subject      = subjectName;
+    state.testName     = test.name;
+    state.testId       = testId;
+    state.duration     = test.duration;
+    state.questions    = doShuffle ? shuffle(test.questions) : [...test.questions];
+    state.currentIndex = 0;
+    state.userAnswers  = new Array(state.questions.length).fill(null); /* All null = unanswered */
+    state.shuffled     = !!doShuffle;
+  }
+
+  /* [JS-5d] recordAnswer(qi, oi)
+     PURPOSE : Store the student's option choice for question qi.
+     INPUT   : qi — question index, oi — option index (0-3) */
+  function recordAnswer(qi, oi) { state.userAnswers[qi] = oi; }
+
+  /* [JS-5e] getQuestion(i) — Returns question object at index i */
+  function getQuestion(i) { return state.questions[i]; }
+
+  /* [JS-5f] evaluate()
+     PURPOSE : Count correct/wrong answers and determine a grade label.
+     LOGIC   : Skipped questions (null) are neither correct nor wrong.
+               Grade thresholds: 90%=Outstanding, 75%=Excellent,
+               60%=Good, 40%=Average, <40%=Needs Work
+     RETURNS : { subject, testName, correct, wrong, total, pct, grade } */
+  function evaluate() {
+    let correct = 0, wrong = 0;
+    state.questions.forEach((q, i) => {
+      const a = state.userAnswers[i];
+      if (a === null) return;            /* Skipped — ignore */
+      if (a === q.answer) correct++;
+      else                wrong++;
+    });
+    const total = state.questions.length;
+    const pct   = Math.round((correct / total) * 100);
+    let grade;
+    if      (pct >= 90) grade = { label:"Outstanding 🏆", color:"#f5c842" };
+    else if (pct >= 75) grade = { label:"Excellent 🌟",   color:"#3ecf8e" };
+    else if (pct >= 60) grade = { label:"Good 👍",         color:"#5a8dee" };
+    else if (pct >= 40) grade = { label:"Average 📘",      color:"#f5c842" };
+    else                grade = { label:"Needs Work 📚",   color:"#f56565" };
+    return { subject:state.subject, testName:state.testName, correct, wrong, total, pct, grade };
+  }
+
+  /* [JS-5g] getReview()
+     PURPOSE : Build per-question review data for the result screen.
+     RETURNS : Array of { question, options[], correct, userAnswer } */
+  function getReview() {
+    return state.questions.map((q, i) => ({
+      question:   q.q,
+      options:    q.options,
+      correct:    q.answer,
+      userAnswer: state.userAnswers[i]
+    }));
+  }
+
+  /* [JS-5h] Public API — state exposed as getter so it's read-only externally */
+  return { load, recordAnswer, getQuestion, evaluate, getReview, get state() { return state; } };
+})();
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-6]  TIMER MODULE
+   PURPOSE : Countdown timer shown in the header during an active quiz.
+             Auto-submits when time runs out.
+             Anti-cheat: also submits if student switches browser tabs.
+   ════════════════════════════════════════════════════════════════ */
+const Timer = (() => {
+  let timeLeft = 60;    /* [JS-6a] Remaining seconds */
+  let interval = null;  /* [JS-6b] setInterval handle — null when not running */
+  const badge  = document.getElementById('timer-badge'); /* [JS-6c] Header badge element */
+
+  /* [JS-6d] start(dur)
+     PURPOSE : Begin countdown from dur seconds.
+     LOGIC   : Shows badge, clears danger state, calls tick() once
+               immediately, then every 1 second via setInterval. */
+  function start(dur) {
+    timeLeft = dur || 60;
+    badge.style.display = 'block';
+    badge.classList.remove('danger');
+    tick();
+    interval = setInterval(tick, 1000);
+  }
+
+  /* [JS-6e] stop()
+     PURPOSE : Cancel the interval and hide the badge.
+               Called on submit, exit, or tab switch. */
+  function stop() {
+    clearInterval(interval);
+    interval = null;
+    badge.style.display = 'none';
+  }
+
+  /* [JS-6f] tick()
+     PURPOSE : Called every second. Updates badge text,
+               adds danger class at ≤10s, submits at 0s. */
+  function tick() {
+    badge.textContent = `⏱ ${timeLeft}s`;
+    if (timeLeft <= 10) badge.classList.add('danger'); /* Red + pulse warning */
+    if (timeLeft <= 0)  { stop(); submitQuiz(); }      /* Auto-submit on timeout */
+    timeLeft--;
+  }
+
+  /* [JS-6g] Anti-cheat: visibilitychange event
+     PURPOSE : If the student switches to another browser tab while
+               the quiz is running (interval !== null), submit it.
+               This prevents looking up answers in another tab. */
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && interval !== null) {
+      showToast('⚠️ Tab switch detected — quiz submitted!', '#f56565');
+      stop();
+      submitQuiz();
+    }
+  });
+
+  return { start, stop };
+})();
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-7]  buildSubjectGrid()
+   PURPOSE : Populate the subject selection screen with one card
+             per subject. Shows test count and total question count.
+   CALLED  : Once on page load + whenever tests/questions are added.
+   ════════════════════════════════════════════════════════════════ */
+function buildSubjectGrid() {
+  const grid = document.getElementById('subject-grid');
+  grid.innerHTML = ''; /* [JS-7a] Clear existing cards before rebuilding */
+
+  Object.entries(TEST_BANK).forEach(([name, data]) => {
+    const card = document.createElement('div');
+    card.className = 'subject-card';
+
+    /* [JS-7b] Count tests and questions for this subject */
+    const tc = data.tests.length;
+    const qc = data.tests.reduce((s, t) => s + t.questions.length, 0);
+
+    card.innerHTML = `
+      <span class="subject-icon">${data.icon}</span>
+      <div class="subject-title">${subjectLabel(name)}</div>
+      <div class="subject-count">${tc} Test${tc !== 1 ? 's' : ''} · ${qc} Question${qc !== 1 ? 's' : ''}</div>
+    `;
+    /* [JS-7c] Click routes to test selection screen for this subject */
+    card.addEventListener('click', () => showTestScreen(name));
+    grid.appendChild(card);
+  });
+}
+buildSubjectGrid(); /* [JS-7d] Run immediately when page loads */
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-8]  showTestScreen(subjectName)
+   PURPOSE : Render test cards for the chosen subject and switch
+             to the test selection screen.
+   INPUT   : subjectName — key in TEST_BANK
+   ════════════════════════════════════════════════════════════════ */
+let currentSubject = null; /* [JS-8a] Tracks currently open subject */
+
+function showTestScreen(subjectName) {
+  currentSubject = subjectName;
+  const data  = TEST_BANK[subjectName];
+  const label = subjectLabel(subjectName);
+
+  /* [JS-8b] Set screen heading and subtitle */
+  document.getElementById('test-screen-title').textContent = label;
+  document.getElementById('test-screen-sub').textContent   = `${data.tests.length} test${data.tests.length !== 1 ? 's' : ''} available — choose one to begin`;
+
+  const grid = document.getElementById('test-grid');
+  grid.innerHTML = '';
+
+  /* [JS-8c] Show empty state message if no tests exist */
+  if (!data.tests.length) {
+    grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:50px"><p>No tests yet. Ask admin to create one.</p></div>';
+    showScreen('test-screen');
+    return;
+  }
+
+  /* [JS-8d] Build a card for each test */
+  data.tests.forEach((test, idx) => {
+    const card = document.createElement('div');
+    card.className = 'test-card';
+    card.innerHTML = `
+      <div class="test-card-top"><span class="test-badge">Test ${idx + 1}</span></div>
+      <div class="test-name">${test.name}</div>
+      <div class="test-info"><span>⏱ ${test.duration}s</span><span>📝 ${test.questions.length} Q${test.questions.length !== 1 ? 's' : ''}</span></div>
+    `;
+    /* [JS-8e] Open the quiz options modal when a test card is clicked */
+    card.addEventListener('click', () => showQuizOptions(subjectName, test.id));
+    grid.appendChild(card);
+  });
+
+  showScreen('test-screen');
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-9]  QUIZ OPTIONS MODAL (Shuffle chooser)
+   PURPOSE : When a student clicks a test card, show a modal
+             letting them choose question order before starting.
+   STORED  : pendingQuizSubject, pendingQuizTestId, quizModeSelected
+   ════════════════════════════════════════════════════════════════ */
+let pendingQuizSubject = null;   /* [JS-9a] Subject name waiting to be started */
+let pendingQuizTestId  = null;   /* [JS-9b] Test ID waiting to be started */
+let quizModeSelected   = 'normal'; /* [JS-9c] 'normal' | 'shuffle' */
+
+/* [JS-9d] showQuizOptions(subjectName, testId)
+   PURPOSE : Build and inject the options modal into the DOM. */
+function showQuizOptions(subjectName, testId) {
+  pendingQuizSubject = subjectName;
+  pendingQuizTestId  = testId;
+  quizModeSelected   = 'normal';
+
+  const found = findTest(testId);
+  if (!found) return;
+  const test = found.test;
+
+  /* [JS-9e] Remove any leftover modal from a previous click */
+  const existing = document.getElementById('quiz-options-modal');
+  if (existing) existing.remove();
+
+  /* [JS-9f] Build modal HTML dynamically */
+  const modal = document.createElement('div');
+  modal.id = 'quiz-options-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;max-width:400px;width:100%;text-align:center">
+      <div style="font-size:2rem;margin-bottom:12px">🎯</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;color:#fff;margin-bottom:6px">${test.name}</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-bottom:24px">⏱ ${test.duration}s &nbsp;·&nbsp; 📝 ${test.questions.length} Question${test.questions.length !== 1 ? 's' : ''}</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:20px;text-align:left">
+        <div style="font-size:.76rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;font-weight:500">Question Order</div>
+        <div style="display:flex;gap:10px">
+          <button id="mode-normal"  onclick="selectQuizMode('normal')"  style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--accent);background:rgba(90,141,238,0.12);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;cursor:pointer">📋 As Is</button>
+          <button id="mode-shuffle" onclick="selectQuizMode('shuffle')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;cursor:pointer">🔀 Shuffle</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('quiz-options-modal').remove()" style="flex:1;padding:11px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer">Cancel</button>
+        <button onclick="startQuizFromModal()" style="flex:2;padding:11px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:#0d0f1a;border:none;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer">Start Test →</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+/* [JS-9g] selectQuizMode(mode)
+   PURPOSE : Toggle the visual state of the As Is / Shuffle buttons.
+   INPUT   : mode — 'normal' | 'shuffle' */
+function selectQuizMode(mode) {
+  quizModeSelected = mode;
+  const nb = document.getElementById('mode-normal');
+  const sb = document.getElementById('mode-shuffle');
+  if (mode === 'normal') {
+    nb.style.cssText = 'flex:1;padding:10px;border-radius:8px;border:2px solid var(--accent);background:rgba(90,141,238,0.12);color:var(--accent);font-family:"DM Sans",sans-serif;font-size:.84rem;font-weight:600;cursor:pointer';
+    sb.style.cssText = 'flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:"DM Sans",sans-serif;font-size:.84rem;font-weight:600;cursor:pointer';
+  } else {
+    sb.style.cssText = 'flex:1;padding:10px;border-radius:8px;border:2px solid var(--green);background:rgba(62,207,142,0.12);color:var(--green);font-family:"DM Sans",sans-serif;font-size:.84rem;font-weight:600;cursor:pointer';
+    nb.style.cssText = 'flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:"DM Sans",sans-serif;font-size:.84rem;font-weight:600;cursor:pointer';
+  }
+}
+
+/* [JS-9h] startQuizFromModal()
+   PURPOSE : Called when "Start Test →" is clicked in the modal.
+             Removes the modal, then starts the quiz. */
+function startQuizFromModal() {
+  const modal = document.getElementById('quiz-options-modal');
+  if (modal) modal.remove();
+  startQuiz(pendingQuizSubject, pendingQuizTestId, quizModeSelected === 'shuffle');
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-10] startQuiz(subjectName, testId, doShuffle)
+   PURPOSE : Load quiz data into the engine, render the first
+             question, and start the countdown timer.
+   INPUT   : subjectName — display name string
+             testId      — unique test ID
+             doShuffle   — boolean
+   ════════════════════════════════════════════════════════════════ */
+function startQuiz(subjectName, testId, doShuffle) {
+  /* [JS-10a] Load state into quiz engine */
+  QuizEngine.load(subjectName, testId, doShuffle);
+  const st = QuizEngine.state;
+
+  /* [JS-10b] Update quiz screen header labels */
+  document.getElementById('quiz-subject-name').textContent = subjectLabel(subjectName);
+  document.getElementById('quiz-test-name').textContent    = st.testName;
+  document.getElementById('q-total').textContent           = st.questions.length;
+
+  if (doShuffle) showToast('🔀 Questions shuffled!', '#3ecf8e');
+
+  /* [JS-10c] Switch to quiz screen, render first question, start timer */
+  showScreen('quiz-screen');
+  renderQuestion(0);
+  Timer.start(st.duration);
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-11] renderQuestion(index)
+   PURPOSE : Update ALL quiz-screen DOM elements for the question
+             at the given index. Also restores any previous answer
+             selection so back-navigation preserves choices.
+   INPUT   : index — 0-based question index
+   ════════════════════════════════════════════════════════════════ */
+function renderQuestion(index) {
+  const st     = QuizEngine.state;
+  const q      = QuizEngine.getQuestion(index);
+  const total  = st.questions.length;
+  const labels = ['A','B','C','D'];
+
+  /* [JS-11a] Update question number, text, and counter */
+  document.getElementById('q-number').textContent  = `Question ${String(index + 1).padStart(2, '0')}`;
+  document.getElementById('q-text').textContent    = q.q;
+  document.getElementById('q-current').textContent = index + 1;
+
+  /* [JS-11b] Advance progress bar — width% = (current Q / total Q) × 100 */
+  document.getElementById('progress-bar').style.width = ((index + 1) / total * 100) + '%';
+
+  /* [JS-11c] Rebuild options list */
+  const list = document.getElementById('options-list');
+  list.innerHTML = '';
+
+  q.options.forEach((opt, i) => {
+    const li = document.createElement('li');
+    li.className = 'option-item';
+    /* [JS-11d] Restore .selected if student already answered this question */
+    if (st.userAnswers[index] === i) li.classList.add('selected');
+    li.innerHTML = `<span class="option-letter">${labels[i]}</span><span class="option-text">${opt}</span>`;
+    li.addEventListener('click', () => selectOption(index, i, li, list));
+    list.appendChild(li);
+  });
+
+  /* [JS-11e] Disable Prev button on first question */
+  document.getElementById('btn-prev').disabled = (index === 0);
+
+  /* [JS-11f] Show Submit button only on the last question */
+  const isLast = (index === total - 1);
+  document.getElementById('btn-next').style.display   = isLast ? 'none' : 'flex';
+  document.getElementById('btn-submit').style.display = isLast ? 'flex' : 'none';
+}
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-12] selectOption(qi, oi, li, list)
+   PURPOSE : Record the student's answer and highlight the chosen
+             option. Removes .selected from all sibling items first.
+   INPUT   : qi — question index, oi — option index
+             li — the clicked <li> element
+             list — the parent <ul> element
+   ════════════════════════════════════════════════════════════════ */
+function selectOption(qi, oi, li, list) {
+  /* [JS-12a] Remove selection highlight from all options */
+  list.querySelectorAll('.option-item').forEach(el => el.classList.remove('selected'));
+  /* [JS-12b] Highlight the clicked option */
+  li.classList.add('selected');
+  /* [JS-12c] Store the answer in quiz engine state */
+  QuizEngine.recordAnswer(qi, oi);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-13] Question navigation
+   PURPOSE : Move forward/backward through questions.
+   LOGIC   : Advance/decrement currentIndex, then re-render.
+   ════════════════════════════════════════════════════════════════ */
+function nextQuestion() {
+  const s = QuizEngine.state;
+  if (s.currentIndex < s.questions.length - 1) {
+    s.currentIndex++;
+    renderQuestion(s.currentIndex); /* [JS-13a] Render the next question */
+  }
+}
+function prevQuestion() {
+  const s = QuizEngine.state;
+  if (s.currentIndex > 0) {
+    s.currentIndex--;
+    renderQuestion(s.currentIndex); /* [JS-13b] Render the previous question */
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-14] submitQuiz()
+   PURPOSE : Called when: (a) timer reaches 0, (b) tab switch
+             detected, or (c) student clicks the Submit button.
+             Evaluates results, saves to DB, and renders result screen.
+   ════════════════════════════════════════════════════════════════ */
+function submitQuiz() {
+  Timer.stop();                          /* [JS-14a] Stop any running timer */
+  const result = QuizEngine.evaluate(); /* [JS-14b] Calculate score + grade */
+  Database.saveResult(result);           /* [JS-14c] Persist to localStorage */
+  showScreen('result-screen');           /* [JS-14d] Switch to results view */
+
+  /* [JS-14e] Populate result card text fields */
+  document.getElementById('result-subject').textContent   = subjectLabel(result.subject);
+  document.getElementById('result-test-name').textContent = '📌 ' + result.testName;
+  document.getElementById('result-grade').textContent     = result.grade.label;
+  document.getElementById('result-grade').style.color     = result.grade.color;
+  document.getElementById('stat-correct').textContent     = result.correct;
+  document.getElementById('stat-wrong').textContent       = result.wrong;
+  document.getElementById('stat-total').textContent       = result.total;
+  document.getElementById('ring-pct').textContent         = result.pct + '%';
+
+  /* [JS-14f] Animate the SVG donut ring:
+              stroke-dashoffset maps percentage to arc length.
+              Circle circumference = 2πr = 2π×60 ≈ 377.
+              offset 377 = empty ring, 0 = completely full ring. */
+  const offset = 377 - (result.pct / 100) * 377;
+  const ring   = document.getElementById('ring-fill');
+  ring.style.stroke = result.grade.color;
+  /* [JS-14g] Small delay lets the CSS transition run after element is visible */
+  setTimeout(() => { ring.style.strokeDashoffset = offset; }, 100);
+
+  buildReview(QuizEngine.getReview()); /* [JS-14h] Pre-build the review list */
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-15] buildReview(review)
+   PURPOSE : Build the per-question answer breakdown shown when
+             student clicks "Review Answers".
+   INPUT   : review — array from QuizEngine.getReview()
+   LOGIC   : For each question, render all 4 options but only show
+             visual feedback for: correct, wrong, and the right answer.
+   ════════════════════════════════════════════════════════════════ */
+function buildReview(review) {
+  const list   = document.getElementById('review-list');
+  const labels = ['A','B','C','D'];
+  list.innerHTML = '';
+
+  review.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'review-item';
+    let html = `<div class="review-q"><strong>Q${idx + 1}:</strong> ${item.question}</div>`;
+
+    item.options.forEach((opt, i) => {
+      let cls = '';
+      /* [JS-15a] Determine the CSS class for each option:
+                  correct = user picked AND it was right
+                  answer  = the right answer (user got it wrong)
+                  wrong   = user picked but it was wrong */
+      if (i === item.correct && item.userAnswer === i) cls = 'correct';
+      else if (i === item.correct)                     cls = 'answer';
+      else if (i === item.userAnswer)                  cls = 'wrong';
+      if (cls) {
+        const icon = (i === item.correct) ? '✓' : '✗';
+        html += `<span class="review-a ${cls}">${labels[i]}: ${opt} ${icon}</span><br/>`;
+      }
+    });
+
+    div.innerHTML = html;
+    list.appendChild(div);
+  });
+}
+
+/* [JS-15b] toggleReview()
+   PURPOSE : Show/hide the review list and update button label. */
+function toggleReview() {
+  const list = document.getElementById('review-list');
+  const btn  = document.querySelector('.review-toggle');
+  const open = list.style.display === 'block';
+  list.style.display = open ? 'none' : 'block';
+  btn.textContent    = open ? '📋 Review Answers' : '▲ Hide Review';
+}
+
+/* [JS-15c] Post-result screen action helpers */
+function retryQuiz()         { startQuiz(QuizEngine.state.subject, QuizEngine.state.testId, QuizEngine.state.shuffled); document.getElementById('review-list').style.display = 'none'; }
+function showSubjectScreen() { showScreen('subject-screen'); Timer.stop(); }
+function confirmExit()       { if (confirm('Exit quiz? Progress will be lost.')) { Timer.stop(); showScreen('test-screen'); } }
+function goToDashboard()     { showScreen('dashboard-screen'); Dashboard.load(); }
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-16] DASHBOARD MODULE
+   PURPOSE : Load and render the student's personal results table
+             and the global top-10 leaderboard.
+   ════════════════════════════════════════════════════════════════ */
+const Dashboard = (() => {
+
+  /* [JS-16a] load() — Entry point, refreshes both tabs */
+  function load() {
+    const user = Auth.getUser();
+    document.getElementById('dashboard-welcome').textContent =
+      user ? `Welcome back, ${user.name}!` : 'Welcome!';
+    loadMyResults();
+    loadLeaderboard();
+  }
+
+  /* [JS-16b] loadMyResults()
+     PURPOSE : Render the logged-in student's result history table.
+               Shows "No results yet" if history is empty. */
+  function loadMyResults() {
+    const results = Database.getMyResults();
+    const tbody   = document.getElementById('my-results-body');
+    if (!results.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">No results yet. Take a quiz!</td></tr>';
+      return;
+    }
+    tbody.innerHTML = results.map((r, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${subjectLabel(r.subject)}</td>
+        <td style="color:var(--accent);font-size:.8rem">${r.testName || '—'}</td>
+        <td><span class="score-pill ${r.score >= 75 ? 'score-high' : r.score >= 50 ? 'score-mid' : 'score-low'}">${r.score}%</span></td>
+        <td style="color:var(--green)">${r.correct}</td>
+        <td style="color:var(--red)">${r.wrong}</td>
+        <td style="color:var(--muted)">${new Date(r.time).toLocaleDateString()}</td>
+      </tr>`
+    ).join('');
+  }
+
+  /* [JS-16c] loadLeaderboard()
+     PURPOSE : Render the top-10 global scorers with medal emojis. */
+  function loadLeaderboard() {
+    const top  = Database.getLeaderboard(10);
+    const wrap = document.getElementById('leaderboard-list');
+    if (!top.length) {
+      wrap.innerHTML = '<p style="color:var(--muted);text-align:center;padding:24px">No results yet.</p>';
+      return;
+    }
+    wrap.innerHTML = top.map((r, i) => {
+      const rank  = i + 1;
+      const cls   = rank === 1 ? 'lb-rank-1' : rank === 2 ? 'lb-rank-2' : rank === 3 ? 'lb-rank-3' : 'lb-rank-n';
+      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+      return `
+        <div class="leaderboard-item">
+          <div class="lb-rank ${cls}">${medal}</div>
+          <div class="lb-avatar">${r.name.charAt(0).toUpperCase()}</div>
+          <div class="lb-info">
+            <div class="lb-name">${r.name}</div>
+            <div class="lb-sub">${subjectLabel(r.subject)} · ${r.testName || '—'}</div>
+          </div>
+          <div class="lb-score">${r.score}%</div>
+        </div>`;
+    }).join('');
+  }
+
+  return { load };
+})();
+
+/* [JS-16d] switchTab(tabId, btn)
+   PURPOSE : Activate the selected dashboard tab and deactivate others.
+   INPUT   : tabId — 'my-results' | 'leaderboard'
+             btn   — the clicked tab button element */
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.dashboard-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#dashboard-screen .tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + tabId).classList.add('active');
+  if (tabId === 'leaderboard') Dashboard.load(); /* Reload leaderboard on tab switch */
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-17] ADMIN PANEL MODULE
+   PURPOSE : All admin-only CRUD operations on tests and questions.
+             Also renders the Manage Tests list and All Results table.
+   EXPORTS : load, createTest, addQuestion, bulkUpload,
+             renderTestList, renderAllResults
+   ════════════════════════════════════════════════════════════════ */
+const AdminPanel = (() => {
+
+  /* [JS-17a] load()
+     PURPOSE : Refresh all admin stats and all sub-list views.
+               Called on login and after any data change. */
+  function load() {
+    const all        = Database.getAllResults();
+    const totalTests = Object.values(TEST_BANK).reduce((s, d) => s + d.tests.length, 0);
+    const totalQs    = Object.values(TEST_BANK).reduce((s, d) => s + d.tests.reduce((ss, t) => ss + t.questions.length, 0), 0);
+
+    /* [JS-17b] Update overview stat boxes */
+    document.getElementById('admin-stat-students').textContent  = new Set(all.map(r => r.email)).size || 0;
+    document.getElementById('admin-stat-attempts').textContent  = all.length;
+    document.getElementById('admin-stat-tests').textContent     = totalTests;
+    document.getElementById('admin-stat-questions').textContent = totalQs;
+
+    renderTestList();
+    refreshTestDropdown('aq-subject',   'aq-test');
+    refreshTestDropdown('bulk-subject', 'bulk-test');
+    renderAllResults();
+  }
+
+  /* [JS-17c] createTest()
+     PURPOSE : Create a new empty test container under a subject.
+     LOGIC   : Reads subject, name, duration from the Create Test form.
+               Generates a unique ID from subject + timestamp. */
+  function createTest() {
+    const subject  = document.getElementById('ct-subject').value;
+    const name     = document.getElementById('ct-name').value.trim();
+    const duration = parseInt(document.getElementById('ct-duration').value) || 60;
+    if (!name) { showToast('Please enter a test name.', '#f56565'); return; }
+    const id = subject.toLowerCase() + '_' + Date.now(); /* [JS-17d] Unique ID */
+    TEST_BANK[subject].tests.push({ id, name, duration, questions:[] });
+    document.getElementById('ct-name').value     = '';
+    document.getElementById('ct-duration').value = '60';
+    showToast(`Test "${name}" created in ${subjectLabel(subject)}!`, '#3ecf8e');
+    load(); buildSubjectGrid(); /* Refresh UI after data change */
+  }
+
+  /* [JS-17e] addQuestion()
+     PURPOSE : Add a single question to a chosen test.
+     VALIDATION : All fields must be filled. Test must exist. */
+  function addQuestion() {
+    const subject = document.getElementById('aq-subject').value;
+    const testId  = document.getElementById('aq-test').value;
+    const q       = document.getElementById('aq-question').value.trim();
+    const opts    = [0,1,2,3].map(i => document.getElementById(`aq-opt${i}`).value.trim());
+    const answer  = parseInt(document.getElementById('aq-answer').value);
+
+    if (!testId) { showToast('No test found. Create one first.', '#f56565'); return; }
+    if (!q || opts.some(o => !o)) { showToast('Please fill all fields.', '#f56565'); return; }
+
+    const found = findTest(testId);
+    if (!found) { showToast('Test not found.', '#f56565'); return; }
+    found.test.questions.push({ q, options: opts, answer });
+
+    showToast(`Question added to "${found.test.name}"!`, '#3ecf8e');
+    /* [JS-17f] Clear the form inputs after success */
+    document.getElementById('aq-question').value = '';
+    [0,1,2,3].forEach(i => document.getElementById(`aq-opt${i}`).value = '');
+    load(); buildSubjectGrid();
+  }
+
+  /* [JS-17g] bulkUpload()
+     PURPOSE : Parse a JSON array from the textarea and import all
+               valid questions into the target test.
+     VALIDATION STEPS:
+       1. testId and JSON text must not be empty
+       2. JSON must parse without error
+       3. JSON root must be an array
+       4. Each item validated individually — bad items are skipped
+          with a descriptive error message stored in skipped[]
+     FEEDBACK : Shows green box for success, red for errors,
+                also lists skipped items with reasons. */
+  function bulkUpload() {
+    const testId   = document.getElementById('bulk-test').value;
+    const raw      = document.getElementById('bulk-json').value.trim();
+    const feedback = document.getElementById('bulk-feedback');
+    feedback.style.display = 'none';
+
+    if (!testId) { showToast('Select a test first.', '#f56565'); return; }
+    if (!raw)    { showToast('Please paste JSON data.', '#f56565'); return; }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(raw); /* [JS-17h] Step 1: parse JSON */
+    } catch (e) {
+      feedback.className     = 'bulk-feedback error';
+      feedback.textContent   = `❌ Invalid JSON: ${e.message}`;
+      feedback.style.display = 'block';
+      showToast('❌ Invalid JSON format!', '#f56565');
+      return;
+    }
+
+    if (!Array.isArray(parsed)) { /* [JS-17i] Step 2: must be array */
+      feedback.className     = 'bulk-feedback error';
+      feedback.textContent   = '❌ JSON must be an array [ ... ] of question objects.';
+      feedback.style.display = 'block';
+      showToast('❌ Must be a JSON array!', '#f56565');
+      return;
+    }
+
+    /* [JS-17j] Step 3: validate each question individually */
+    const valid = [], skipped = [];
+    parsed.forEach((item, idx) => {
+      const num = `#${idx + 1}`;
+      if (typeof item.q !== 'string' || !item.q.trim())                                             { skipped.push(`${num}: missing "q"`); return; }
+      if (!Array.isArray(item.options) || item.options.length !== 4 || item.options.some(o => !o)) { skipped.push(`${num}: "options" must be 4 non-empty strings`); return; }
+      if (typeof item.answer !== 'number' || item.answer < 0 || item.answer > 3)                   { skipped.push(`${num}: "answer" must be 0–3`); return; }
+      valid.push({ q: item.q.trim(), options: item.options.map(String), answer: item.answer });
+    });
+
+    if (!valid.length) {
+      feedback.className     = 'bulk-feedback error';
+      feedback.innerHTML     = `❌ No valid questions.<br><small>${skipped.join('<br>')}</small>`;
+      feedback.style.display = 'block';
+      showToast('❌ No valid questions!', '#f56565');
+      return;
+    }
+
+    const found = findTest(testId);
+    if (!found) { showToast('Target test not found.', '#f56565'); return; }
+    found.test.questions.push(...valid); /* [JS-17k] Push all valid questions */
+
+    const skipMsg = skipped.length ? `<br><small style="color:var(--muted)">⚠️ Skipped ${skipped.length}: ${skipped.join('; ')}</small>` : '';
+    feedback.className     = 'bulk-feedback ok';
+    feedback.innerHTML     = `✅ ${valid.length} question${valid.length !== 1 ? 's' : ''} imported into "${found.test.name}"!${skipMsg}`;
+    feedback.style.display = 'block';
+
+    showToast(`✅ ${valid.length} question${valid.length !== 1 ? 's' : ''} imported!`, '#3ecf8e');
+    document.getElementById('bulk-json').value = '';
+    load(); buildSubjectGrid();
+  }
+
+  /* [JS-17l] renderTestList()
+     PURPOSE : Build the Manage Tests tab content.
+               For each test: shows name, subject, duration, Q count,
+               Delete Test button, and per-question Edit + Rewrite + Delete buttons.
+     NEW in v2: Each question now has a "✍️ Rewrite" button in addition
+                to the existing "✏️ Edit" button. */
+  function renderTestList() {
+    const filter = document.getElementById('mt-filter').value;
+    const wrap   = document.getElementById('manage-tests-list');
+    wrap.innerHTML = '';
+    let found = false;
+
+    Object.entries(TEST_BANK).forEach(([subj, data]) => {
+      if (filter && filter !== subj) return; /* [JS-17m] Apply subject filter */
+
+      data.tests.forEach((test) => {
+        found = true;
+
+        /* [JS-17n] Build test header row */
+        const row = document.createElement('div');
+        row.className = 'test-list-item';
+        row.innerHTML = `
+          <div>
+            <div class="test-list-name">${test.name}</div>
+            <div class="test-list-meta">${subjectLabel(subj)} · ⏱ ${test.duration}s · 📝 ${test.questions.length} Question${test.questions.length !== 1 ? 's' : ''}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0"></div>`;
+
+        const btnArea = row.querySelector('div:last-child');
+
+        /* [JS-17o] Delete entire test button */
+        const delBtn = document.createElement('button');
+        delBtn.className   = 'delete-btn';
+        delBtn.textContent = '🗑 Delete Test';
+        delBtn.onclick = () => {
+          if (confirm(`Delete test "${test.name}" and all ${test.questions.length} question(s)?`)) {
+            TEST_BANK[subj].tests = TEST_BANK[subj].tests.filter(t => t.id !== test.id);
+            showToast('Test deleted.', '#f56565');
+            load(); buildSubjectGrid();
+          }
+        };
+        btnArea.appendChild(delBtn);
+        wrap.appendChild(row);
+
+        /* [JS-17p] Empty state message if test has no questions yet */
+        if (test.questions.length === 0) {
+          const emptyRow = document.createElement('div');
+          emptyRow.style.cssText = 'padding:8px 14px 8px 28px;font-size:.78rem;color:var(--muted);border-left:2px solid var(--border);margin-bottom:4px';
+          emptyRow.textContent   = 'No questions yet. Add via "Add Question" or "Bulk Upload".';
+          wrap.appendChild(emptyRow);
+        }
+
+        /* [JS-17q] Build a sub-row for each question in this test */
+        test.questions.forEach((qq, qi) => {
+          const qrow = document.createElement('div');
+          qrow.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;padding:9px 14px 9px 28px;background:rgba(255,255,255,0.02);border-left:2px solid var(--border);margin-bottom:3px;border-radius:0 6px 6px 0;gap:10px';
+
+          /* [JS-17r] Question text display with correct answer shown below */
+          const qTextEl = document.createElement('div');
+          qTextEl.style.cssText = 'font-size:.8rem;color:var(--muted);flex:1;min-width:0';
+          const labels = ['A','B','C','D'];
+          qTextEl.innerHTML = `
+            <div style="color:var(--text);margin-bottom:3px"><strong>${qi + 1}.</strong> ${qq.q}</div>
+            <div style="font-size:.73rem">✓ Correct: <span style="color:var(--green)">${labels[qq.answer]}. ${qq.options[qq.answer]}</span></div>`;
+
+          const qBtns = document.createElement('div');
+          qBtns.style.cssText = 'display:flex;gap:5px;flex-shrink:0;margin-top:2px';
+
+          /* [JS-17s] Edit button — opens Edit modal (adjust individual fields) */
+          const editBtn = document.createElement('button');
+          editBtn.className   = 'edit-q-btn';
+          editBtn.textContent = '✏️ Edit';
+          editBtn.title       = 'Edit individual fields of this question';
+          editBtn.onclick     = () => openEditQuestion(test.id, qi);
+
+          /* [JS-17t] REWRITE button — opens Rewrite modal (full replacement) ← NEW FEATURE */
+          const rwBtn = document.createElement('button');
+          rwBtn.className   = 'rewrite-q-btn';
+          rwBtn.textContent = '✍️ Rewrite';
+          rwBtn.title       = 'Completely rewrite this question from scratch';
+          rwBtn.onclick     = () => openRewriteQuestion(test.id, qi); /* [JS-17u] Calls new function */
+
+          /* [JS-17v] Delete single question button */
+          const delQBtn = document.createElement('button');
+          delQBtn.className   = 'delete-btn';
+          delQBtn.textContent = '✕';
+          delQBtn.title       = 'Delete this question';
+          delQBtn.onclick = () => {
+            if (confirm(`Delete question: "${qq.q}"?`)) {
+              test.questions.splice(qi, 1);
+              showToast('Question deleted.', '#f56565');
+              load(); buildSubjectGrid();
+            }
+          };
+
+          /* [JS-17w] Append all three action buttons to the button area */
+          qBtns.appendChild(editBtn);
+          qBtns.appendChild(rwBtn);
+          qBtns.appendChild(delQBtn);
+          qrow.appendChild(qTextEl);
+          qrow.appendChild(qBtns);
+          wrap.appendChild(qrow);
+        });
+      });
+    });
+
+    if (!found) {
+      wrap.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px">No tests found.</p>';
+    }
+  }
+
+  /* [JS-17x] renderAllResults()
+     PURPOSE : Build the All Results tab — a scrollable list of every
+               quiz attempt by every student, with name, email,
+               subject, score pill, and date. */
+  function renderAllResults() {
+    const all  = Database.getAllResults();
+    const wrap = document.getElementById('admin-results-list');
+    if (!all.length) {
+      wrap.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px">No results yet.</p>';
+      return;
+    }
+    wrap.innerHTML = all.map(r => `
+      <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:110px">
+          <div style="font-size:.88rem;font-weight:600;color:var(--text)">${r.name}</div>
+          <div style="font-size:.73rem;color:var(--muted)">${r.email}</div>
+        </div>
+        <div>
+          <div style="font-size:.8rem;color:var(--muted)">${subjectLabel(r.subject)}</div>
+          <div style="font-size:.73rem;color:var(--accent)">${r.testName || '—'}</div>
+        </div>
+        <div style="font-size:.75rem;color:var(--muted)">✅ ${r.correct} &nbsp; ❌ ${r.wrong} &nbsp; / ${r.total}</div>
+        <span class="score-pill ${r.score >= 75 ? 'score-high' : r.score >= 50 ? 'score-mid' : 'score-low'}">${r.score}%</span>
+        <div style="font-size:.73rem;color:var(--muted)">${new Date(r.time).toLocaleDateString()}</div>
+      </div>`
+    ).join('');
+  }
+
+  return { load, createTest, addQuestion, bulkUpload, renderTestList, renderAllResults };
+})();
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-18] EDIT QUESTION MODAL (minor field edits)
+   PURPOSE : Open a modal pre-filled with the question's current
+             data so admin can update individual fields.
+   ════════════════════════════════════════════════════════════════ */
+
+/* [JS-18a] openEditQuestion(testId, qi)
+   PURPOSE : Populate and display the Edit Question modal.
+   INPUT   : testId — unique test identifier string
+             qi     — question index within that test */
+function openEditQuestion(testId, qi) {
+  const found = findTest(testId);
+  if (!found) { showToast('Test not found.', '#f56565'); return; }
+  const q = found.test.questions[qi];
+
+  /* [JS-18b] Store references in hidden fields so saveEditedQuestion() knows what to update */
+  document.getElementById('edit-q-idx').value    = qi;
+  document.getElementById('edit-q-testId').value = testId;
+  document.getElementById('edit-q-text').value   = q.q;
+  document.getElementById('edit-q-answer').value = q.answer;
+
+  /* [JS-18c] Dynamically inject Option A-D inputs labelled with correct indicator */
+  const container = document.getElementById('edit-options-container');
+  container.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const labels    = ['A','B','C','D'];
+    const isCorrect = (i === q.answer);
+    container.innerHTML += `
+      <div class="form-group">
+        <label>Option ${labels[i]}${isCorrect ? ' <span style="color:var(--green)">✓ correct</span>' : ''}</label>
+        <input class="form-input edit-opt" data-idx="${i}" value="${opt}" placeholder="Option ${labels[i]}">
+      </div>`;
+  });
+
+  document.getElementById('edit-modal').classList.add('open'); /* [JS-18d] Show the modal */
+}
+
+/* [JS-18e] saveEditedQuestion()
+   PURPOSE : Read form values and update the TEST_BANK entry in-place. */
+function saveEditedQuestion() {
+  const testId = document.getElementById('edit-q-testId').value;
+  const qi     = parseInt(document.getElementById('edit-q-idx').value);
+  const qText  = document.getElementById('edit-q-text').value.trim();
+  if (!qText) { showToast('Question text cannot be empty.', '#f56565'); return; }
+
+  const found = findTest(testId);
+  if (!found) { showToast('Test not found.', '#f56565'); return; }
+  const q  = found.test.questions[qi];
+  q.q      = qText;
+  q.answer = parseInt(document.getElementById('edit-q-answer').value);
+
+  /* [JS-18f] Read all four option inputs and update the question's options array */
+  document.querySelectorAll('.edit-opt').forEach(inp => {
+    const idx = parseInt(inp.dataset.idx);
+    const val = inp.value.trim();
+    if (!val) { showToast(`Option ${['A','B','C','D'][idx]} cannot be empty.`, '#f56565'); return; }
+    q.options[idx] = val;
+  });
+
+  showToast('💾 Question updated!', '#5a8dee');
+  closeEditModal();
+  AdminPanel.renderTestList();
+  AdminPanel.load();
+  buildSubjectGrid();
+}
+
+/* [JS-18g] closeEditModal() — Remove .open class to hide the modal */
+function closeEditModal() { document.getElementById('edit-modal').classList.remove('open'); }
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-19] REWRITE QUESTION MODAL  ← NEW FEATURE
+   PURPOSE : Admin can COMPLETELY replace a question — all fields
+             at once, starting from blank inputs.
+             Different from Edit which pre-fills and patches fields.
+             Opened by the "✍️ Rewrite" button in Manage Tests.
+   ════════════════════════════════════════════════════════════════ */
+
+/* [JS-19a] openRewriteQuestion(testId, qi)
+   PURPOSE : Display the Rewrite modal with BLANK inputs (no pre-fill)
+             so admin writes the entire question from scratch.
+   INPUT   : testId — unique test identifier
+             qi     — question index */
+function openRewriteQuestion(testId, qi) {
+  const found = findTest(testId);
+  if (!found) { showToast('Test not found.', '#f56565'); return; }
+  const q = found.test.questions[qi];
+
+  /* [JS-19b] Store references in hidden fields */
+  document.getElementById('rw-q-idx').value    = qi;
+  document.getElementById('rw-q-testId').value = testId;
+
+  /* [JS-19c] Pre-fill with EXISTING content so admin can see what they're replacing.
+              They can clear and retype, or partially modify the existing text. */
+  document.getElementById('rw-q-text').value   = q.q;
+  document.getElementById('rw-opt0').value     = q.options[0];
+  document.getElementById('rw-opt1').value     = q.options[1];
+  document.getElementById('rw-opt2').value     = q.options[2];
+  document.getElementById('rw-opt3').value     = q.options[3];
+  document.getElementById('rw-q-answer').value = q.answer;
+
+  document.getElementById('rewrite-modal').classList.add('open'); /* [JS-19d] Show modal */
+}
+
+/* [JS-19e] saveRewrittenQuestion()
+   PURPOSE : Validate all 6 inputs and completely overwrite the
+             question object in TEST_BANK with new values.
+   VALIDATION : Question text and all 4 options must be non-empty.
+   EFFECT   : Full replacement — old question text and options are gone. */
+function saveRewrittenQuestion() {
+  const testId = document.getElementById('rw-q-testId').value;
+  const qi     = parseInt(document.getElementById('rw-q-idx').value);
+
+  /* [JS-19f] Read all new values from the rewrite form */
+  const newQ    = document.getElementById('rw-q-text').value.trim();
+  const newOpts = [
+    document.getElementById('rw-opt0').value.trim(),
+    document.getElementById('rw-opt1').value.trim(),
+    document.getElementById('rw-opt2').value.trim(),
+    document.getElementById('rw-opt3').value.trim()
+  ];
+  const newAnswer = parseInt(document.getElementById('rw-q-answer').value);
+
+  /* [JS-19g] Validate — nothing can be left blank */
+  if (!newQ) { showToast('Question text cannot be empty.', '#f56565'); return; }
+  const labels = ['A','B','C','D'];
+  for (let i = 0; i < 4; i++) {
+    if (!newOpts[i]) { showToast(`Option ${labels[i]} cannot be empty.`, '#f56565'); return; }
+  }
+
+  /* [JS-19h] Find the question in TEST_BANK and replace ALL fields */
+  const found = findTest(testId);
+  if (!found) { showToast('Test not found.', '#f56565'); return; }
+  const q    = found.test.questions[qi];
+  q.q        = newQ;          /* Replace question text */
+  q.options  = newOpts;       /* Replace all 4 options */
+  q.answer   = newAnswer;     /* Replace correct answer index */
+
+  showToast('✍️ Question fully rewritten!', '#f5c842'); /* [JS-19i] Gold toast for rewrite */
+  closeRewriteModal();
+  AdminPanel.renderTestList();
+  AdminPanel.load();
+  buildSubjectGrid();
+}
+
+/* [JS-19j] closeRewriteModal() — Remove .open class to hide the rewrite modal */
+function closeRewriteModal() { document.getElementById('rewrite-modal').classList.remove('open'); }
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-20] refreshTestDropdown(subjectSelectId, testSelectId)
+   PURPOSE : Repopulate a <select> element with tests that belong
+             to the currently selected subject.
+   CALLED  : Whenever the subject dropdown changes, and when
+             admin tabs become active (to ensure lists are current).
+   INPUT   : subjectSelectId — element id of the subject <select>
+             testSelectId    — element id of the test <select> to fill
+   ════════════════════════════════════════════════════════════════ */
+function refreshTestDropdown(subjectSelectId, testSelectId) {
+  const subj  = document.getElementById(subjectSelectId).value;
+  const sel   = document.getElementById(testSelectId);
+  sel.innerHTML = '';
+  const tests = TEST_BANK[subj]?.tests || [];
+  if (!tests.length) {
+    sel.innerHTML = '<option value="">No tests — create one first</option>';
+    return;
+  }
+  tests.forEach(t => {
+    const o = document.createElement('option');
+    o.value       = t.id;
+    o.textContent = `${t.name} (${t.questions.length} Qs)`;
+    sel.appendChild(o);
+  });
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-21] switchAdminTab(tabId, btn)
+   PURPOSE : Show the clicked admin tab's content panel, hide others,
+             and refresh the new tab's data.
+   INPUT   : tabId — 'create-test' | 'add-question' | 'bulk-upload'
+                     | 'manage-tests' | 'all-results'
+             btn   — the clicked tab button element
+   ════════════════════════════════════════════════════════════════ */
+function switchAdminTab(tabId, btn) {
+  /* [JS-21a] Deactivate all admin tab buttons */
+  document.querySelectorAll('#admin-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  /* [JS-21b] Hide all admin tab panels */
+  document.querySelectorAll('#admin-screen .tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('admin-tab-' + tabId).classList.add('active');
+  /* [JS-21c] Refresh data for data-heavy tabs */
+  if (tabId === 'manage-tests') AdminPanel.renderTestList();
+  if (tabId === 'all-results')  AdminPanel.renderAllResults();
+  if (tabId === 'bulk-upload')  refreshTestDropdown('bulk-subject', 'bulk-test');
+  if (tabId === 'add-question') refreshTestDropdown('aq-subject', 'aq-test');
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-22] showScreen(id)
+   PURPOSE : Deactivate all .screen elements, then activate the
+             target screen. Resets animation so it replays.
+             Smooth-scrolls to the top of the page.
+   INPUT   : id — id attribute of the target <section> element
+   ════════════════════════════════════════════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+    s.style.animation = 'none'; /* [JS-22a] Reset animation so it replays next time */
+  });
+  const target = document.getElementById(id);
+  target.classList.add('active');
+  target.style.animation = ''; /* [JS-22b] Re-enable the fadeUp animation */
+  window.scrollTo({ top:0, behavior:'smooth' }); /* [JS-22c] Scroll to top of page */
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-23] showToast(msg, color)
+   PURPOSE : Display a temporary bottom-right notification for 3 s.
+             Slides up via CSS transition, then slides away.
+   INPUT   : msg   — text to display
+             color — CSS colour string for border + text
+   ════════════════════════════════════════════════════════════════ */
+function showToast(msg, color = '#3ecf8e') {
+  const t = document.getElementById('toast');
+  t.textContent        = msg;
+  t.style.borderColor  = color;
+  t.style.color        = color;
+  t.classList.add('show');                              /* [JS-23a] Slide into view */
+  setTimeout(() => t.classList.remove('show'), 3000);  /* [JS-23b] Slide away after 3 s */
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-24] handleHeaderAuth()
+   PURPOSE : Called by the header Sign In / Logout button.
+             If a user is logged in, logs them out.
+             If no user, shows the login screen.
+   ════════════════════════════════════════════════════════════════ */
+function handleHeaderAuth() {
+  if (Auth.getUser()) Auth.logout();
+  else showScreen('login-screen');
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   [JS-25] GLOBAL ALIASES
+   PURPOSE : HTML onclick attributes require functions in the global
+             scope. These thin wrappers delegate to their modules.
+   ════════════════════════════════════════════════════════════════ */
+function googleLogin()      { Auth.googleLogin(); }         /* [JS-25a] Login → Auth module */
+function demoLogin(r)       { Auth.demoLogin(r); }          /* [JS-25b] Demo login → Auth */
+function adminCreateTest()  { AdminPanel.createTest(); }    /* [JS-25c] Create test → Admin */
+function adminAddQuestion() { AdminPanel.addQuestion(); }   /* [JS-25d] Add question → Admin */
+function adminBulkUpload()  { AdminPanel.bulkUpload(); }    /* [JS-25e] Bulk upload → Admin */
+function renderTestList()   { AdminPanel.renderTestList(); }/* [JS-25f] Render list → Admin */
+
+</script>
+</body>
+</html>
